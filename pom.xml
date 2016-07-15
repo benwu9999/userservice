@@ -19,6 +19,27 @@
     <artifactId>spring-boot-starter-parent</artifactId>
     <version>1.3.5.RELEASE</version>
   </parent>
+  
+  <!-- <build>
+	  <plugins>
+	      <plugin>
+	          <groupId>org.jsonschema2pojo</groupId>
+	          <artifactId>jsonschema2pojo-maven-plugin</artifactId>
+	          <version>0.4.23</version>
+	          <configuration>
+	              <sourceDirectory>${basedir}/src/main/resources/schema</sourceDirectory>
+	              <targetPackage>com.wungong.userservice.model</targetPackage>
+	          </configuration>
+	          <executions>
+	              <execution>
+	                  <goals>
+	                      <goal>generate</goal>
+	                  </goals>
+	              </execution>
+	          </executions>
+	      </plugin>
+	    </plugins>
+	</build> -->
 
   <dependencies>
   	<dependency>
