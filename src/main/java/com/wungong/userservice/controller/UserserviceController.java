@@ -9,8 +9,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.wungong.userservice.model.CreateUserResponse;
-import com.wungong.userservice.model.JobSeeker;
+import com.wungong.userservice.model.UserEntity;
 import com.wungong.userservice.model.request.CreateUserRequest;
+import com.wungong.userservice.model.request.UpdateUserRequest;
 import com.wungong.userservice.model.response.DeleteUserResponse;
 import com.wungong.userservice.model.response.GetUserResponse;
 import com.wungong.userservice.model.response.UpdateUserResponse;
@@ -43,7 +44,7 @@ public class UserserviceController {
 	
 	@RequestMapping(method = RequestMethod.GET, params="id", produces="application/json")
     public GetUserResponse getUser(@RequestParam("id") String id) {
-		JobSeeker user = userService.getUser(id);
-		return new GetUserResponse(Response.Status.OK);
+		UserEntity user = userService.getUser(id);
+		return new GetUserResponse(Response.Status.OK, user);
     }
 }
