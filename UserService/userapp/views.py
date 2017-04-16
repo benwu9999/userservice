@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 
 def index(request):
-	return HttpRespose("Hello world! This is our User App.")
+	return HttpResponse("Hello world! This is our User App.")
 
 from rest_framework import generics 
 from userapp.models import User
