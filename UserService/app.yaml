@@ -2,6 +2,7 @@
 runtime: python27
 api_version: 10
 threadsafe: yes
+service: user-service
 
 handlers:
 - url: /static
