@@ -28,7 +28,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     applicationIds = models.TextField(null=True)
     roles = models.TextField(null=True)
     active = models.BooleanField(_('active'), default=True)
-    date_joined = models.DateTimeField(_('date joined'), auto_now_add=True)
+    dateJoined = models.DateTimeField(_('date joined'), auto_now_add=True)
 
     objects = UserManager()
 
