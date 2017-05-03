@@ -19,17 +19,19 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ('firstName', 'lastName', 'userId', 'password', 'email', 'phone',
                   'profileIds', 'activeProfileId', 'locationIds', 'activeLocationId',
-                  'applicationIds', 'roles', 'active', 'date_joined')
+                  'applicationIds', 'roles', 'active', 'dateJoined')
 
     def create(self, validated_data):
         User.objects.create_user(**validated_data)
         return validated_data
 
+    # Comma Separated String to List
     def string_to_list(self, data):
         if (data is not None) and (not isinstance(data, list)):
             data = [i for i in data.split(',')]
         return data
 
+    # List to Comma Separated String
     def list_to_string(self, data):
         if data:
             data = sorted(set(data))
