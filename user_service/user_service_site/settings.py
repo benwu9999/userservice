@@ -27,6 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+AUTH_USER_MODEL = 'user_service.User'
 
 # Application definition
 
@@ -51,7 +52,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'mysite.urls'
+ROOT_URLCONF = 'user_service_site.urls'
 
 TEMPLATES = [
     {
@@ -69,7 +70,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'mysite.wsgi.application'
+WSGI_APPLICATION = 'user_service_site.wsgi.application'
 
 
 # Database
@@ -82,8 +83,8 @@ if  os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine'):
         'default': {
             'ENGINE': 'django.db.backends.mysql',
             'HOST': '/cloudsql/perfect-entry-162216:us-east1:jobpost-instance',
-            'NAME': 'jobpost_database',
-            'USER': 'jobpost_appuser',
+            'NAME': 'user',
+            'USER': 'oneseek',
             'PASSWORD': 'jobpost8531162',
         }
     }
@@ -99,8 +100,8 @@ else:
             'ENGINE': 'django.db.backends.mysql',
             'HOST': '127.0.0.1',
             'PORT': '3306',
-            'NAME': 'jobpost_database',
-            'USER': 'jobpost_appuser',
+            'NAME': 'user',
+            'USER': 'oneseek',
             'PASSWORD': 'jobpost8531162',
         }
     }

@@ -20,7 +20,7 @@ from rest_framework.documentation import include_docs_urls
 from django.views.generic.base import RedirectView
 
 urlpatterns = [
-    url(r'^',include('userapp.urls')),
+    url(r'^',include('user_service.urls')),
     url(r'^admin/', admin.site.urls),
     url(r'^docs/', include_docs_urls(title='API Info'), name='APIInfo'),
     url(r'^.*$', RedirectView.as_view(url='/docs/', permanent=False)),
