@@ -6,14 +6,15 @@ class UserSerializer(serializers.ModelSerializer):
     """
     Serializer to convert User object data to primitive Python datatypes
     """
-    locationIds = serializers.ListField(child=serializers.UUIDField(format='hex_verbose'), min_length=None,
-                                        max_length=None)
-    profileIds = serializers.ListField(child=serializers.UUIDField(format='hex_verbose'), min_length=None,
-                                       max_length=None)
-    applicationIds = serializers.ListField(child=serializers.UUIDField(format='hex_verbose'), min_length=None,
-                                           max_length=None)
-    roles = serializers.ListField(child=serializers.UUIDField(format='hex_verbose'), min_length=None,
-                                  max_length=None)
+    # commenting this out now for testing JWT authentication
+    # locationIds = serializers.ListField(child=serializers.UUIDField(format='hex_verbose'), min_length=None,
+    #                                     max_length=None)
+    # profileIds = serializers.ListField(child=serializers.UUIDField(format='hex_verbose'), min_length=None,
+    #                                    max_length=None)
+    # applicationIds = serializers.ListField(child=serializers.UUIDField(format='hex_verbose'), min_length=None,
+    #                                        max_length=None)
+    # roles = serializers.ListField(child=serializers.UUIDField(format='hex_verbose'), min_length=None,
+    #                               max_length=None)
 
 
     class Meta:
@@ -23,8 +24,11 @@ class UserSerializer(serializers.ModelSerializer):
                   'applicationIds', 'roles', 'active', 'dateJoined')
 
     def create(self, validated_data):
-        User.objects.create_user(**validated_data)
-        return validated_data
+        user = super(UserSerializer, self).create(validated_data)
+        user.set_password(validated_data['password'])
+        user.is_active = True
+        user.save()
+        return user
 
     # Comma Separated String to List
     def string_to_list(self, data):
