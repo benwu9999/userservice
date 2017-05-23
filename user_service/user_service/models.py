@@ -36,7 +36,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ['email']
 
     class Meta:
-        db_name = 'user'
+        db_table = 'user'
         verbose_name = _('user')
         verbose_name_plural = _('users')
 
