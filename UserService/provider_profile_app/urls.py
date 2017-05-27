@@ -1,7 +1,7 @@
-"""mysite URL Configuration
+"""ProviderProfileService URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/1.10/topics/http/urls/
+    https://docs.djangoproject.com/en/1.11/topics/http/urls/
 Examples:
 Function views
     1. Add an import:  from my_app import views
@@ -13,16 +13,19 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-
-from django.conf.urls import include, url
+from django.conf.urls import url
 from django.contrib import admin
-from rest_framework.documentation import include_docs_urls
-from django.views.generic.base import RedirectView
+from . import views
 
 urlpatterns = [
-    url(r'^',include('user_service.urls')),
     url(r'^admin/', admin.site.urls),
-    url(r'^docs/', include_docs_urls(title='API Info'), name='APIInfo'),
-    url(r'^.*$', RedirectView.as_view(url='/docs/', permanent=False)),
-]
 
+    url(r'^providerProfile/$', views.ProviderProfileList.as_view()),
+
+    # supports /profile/{profileId}
+    url(r'^providerProfile/(?P<profileId>.+)$', views.ProviderProfileDetail.as_view()),
+
+    url(r'^providerProfile/allIds$',views.AllIdsList.as_view()),
+    url(r'^providerProfile/ids=$',views.ProviderProfileById.as_view()),
+    url(r'^admin/', admin.site.urls),
+]

@@ -2,13 +2,13 @@
 runtime: python27
 api_version: 10
 threadsafe: yes
-service: user-service
+service: UserService
 
 handlers:
 - url: /static
   static_dir: static/
 - url: .*
-  script: user_service_site.wsgi.application
+  script: admin_site.wsgi.application
 
 # Only pure Python libraries can be vendored
 # Python libraries that use C extensions can

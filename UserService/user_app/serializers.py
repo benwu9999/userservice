@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User
+from .models import *
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -68,3 +68,28 @@ class UserSerializer(serializers.ModelSerializer):
         ret['applicationIds'] = self.list_to_string(ret['applicationIds'])
         ret['roles'] = self.list_to_string(ret['roles'])
         return ret
+
+class ProfileIdSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProfileId
+        fields = '__all__'
+
+class ProviderProfileIdSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProviderProfileId
+        fields = '__all__'
+
+class LocationIdSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LocationId
+        fields = '__all__'
+
+class JobPostIdSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = JobPostId
+        fields = '__all__'
+
+class ApplicationIdSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProfileId
+        fields = '__all__'

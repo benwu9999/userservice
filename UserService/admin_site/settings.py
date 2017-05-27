@@ -27,7 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-AUTH_USER_MODEL = 'user_service.User'
+AUTH_USER_MODEL = 'UserService.User'
 
 # Application definition
 
@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'user_service.apps.UserServiceConfig',
+    'UserService.apps.UserServiceConfig',
 ]
 
 MIDDLEWARE = [
@@ -52,7 +52,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'user_service_site.urls'
+ROOT_URLCONF = 'admin_site.urls'
 
 TEMPLATES = [
     {
@@ -70,7 +70,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'user_service_site.wsgi.application'
+WSGI_APPLICATION = 'admin_site.wsgi.application'
 
 
 # Database
