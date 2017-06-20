@@ -4,8 +4,8 @@ import uuid
 
 class ProviderProfile(models.Model):
 
-    profileId=models.UUIDField(primary_key=True, default=uuid.uuid5, editable=False)
-    companyName=models.CharField(_('company name'), max_length=200)
+    profile_id=models.UUIDField(primary_key=True, default=uuid.uuid5, editable=False)
+    company_name=models.CharField(_('company name'), max_length=200)
     description=models.CharField(_('description'), max_length=200)
     phone=models.CharField(_('phone'), max_length=10)
     email=models.EmailField(_('email'))

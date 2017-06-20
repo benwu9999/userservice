@@ -15,25 +15,24 @@ import uuid
 
 class User(AbstractBaseUser, PermissionsMixin):
     # validators
-    phoneValidator = RegexValidator(regex=r'^\+?1?\d{9,15}$',message="Phone number format: '+999999999'. Max 15# allowed.")
+    phone_validator = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number format: '+999999999'. Max 15# allowed.")
     user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     first_name = models.CharField(_('first name'), max_length=30, null=True, blank=True)
     last_name = models.CharField(_('last name'), max_length=30, null=True, blank=True)
     user_name = models.CharField(_('user id'), max_length=30, unique=True)
     email = models.EmailField(_('email address'), validators=[validate_email, ])
-    phone = models.CharField(validators=[phoneValidator, ], max_length=15, null=True, blank=True)
+    phone = models.CharField(validators=[phone_validator, ], max_length=15, null=True, blank=True)
     # not considering provider profile for now, assume all users are seekers
-    activeProfileId = models.ForeignKey(
+    active_profile_id = models.ForeignKey(
         ProfileId,
         on_delete=models.CASCADE,
     )
-    activeLocationId = models.ForeignKey(
+    active_location_id = models.ForeignKey(
         LocationId,
         on_delete=models.CASCADE,
     )
     roles = models.TextField(null=True, blank=True)
     active = models.BooleanField(_('active'), default=True)
-    dateJoined = models.DateTimeField(_('date joined'), auto_now_add=True)
 
     objects = UserManager()
 
@@ -51,19 +50,19 @@ class AbstractMapping(models.Model):
 
 
 class ProfileId(AbstractMapping):
-    profileId = models.CharField(primary_key=True, max_length=200)
+    profile_id = models.CharField(primary_key=True, max_length=200)
 
 
 class ProviderProfileId(AbstractMapping):
-    providerProfileId = models.CharField(primary_key=True, max_length=200)
+    provider_profile_id = models.CharField(primary_key=True, max_length=200)
 
 
 class ApplicationId(AbstractMapping):
-    applicationId = models.CharField(primary_key=True, max_length=200)
+    application_id = models.CharField(primary_key=True, max_length=200)
 
 
 class LocationId(AbstractMapping):
-    locationId = models.CharField(primary_key=True, max_length=200)
+    location_id = models.CharField(primary_key=True, max_length=200)
 
 class JobPostId(AbstractMapping):
-    jobPostId = models.CharField(primary_key=True, max_length=200)
+    job_post_id = models.CharField(primary_key=True, max_length=200)

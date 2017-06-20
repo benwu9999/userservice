@@ -18,8 +18,8 @@ class Compensation(models.Model):
 
 class Profile(models.Model):
 
-    profileId = models.UUIDField(primary_key=True, default=uuid.uuid5, editable=False)
-    title = models.CharField(_('location name'), max_length=200)
+    profile_id = models.UUIDField(primary_key=True, default=uuid.uuid5, editable=False)
+    title = models.CharField(_('profile name'), max_length=200)
     description = models.CharField(_('description'), max_length=200)
     phone = models.CharField(_('phone'), max_length=10)
     skills = models.CharField(_('list of skills'), max_length=45)

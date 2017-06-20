@@ -57,7 +57,7 @@ class UserViewSet(viewsets.ModelViewSet):
 #         d['user'] = user
 #         return d
 
-    b.entry_set.all()
+    # b.entry_set.all()
 
 class ProfileIdViewSet(viewsets.ModelViewSet):
     queryset = ProfileId.objects.all()
