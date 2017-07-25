@@ -10,8 +10,8 @@ class UserManager(BaseUserManager):
         """
 
         if not (user_id and email):
-            raise ValueError('The given userId and email must be set')
-        user = self.model(userId=user_id, email=email, **extra_fields)
+            raise ValueError('user_id and email must be set')
+        user = self.model(user_id=user_id, email=email, **extra_fields)
         user.set_password(password)
         user.full_clean()
         user.save(using=self._db)

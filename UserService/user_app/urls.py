@@ -6,23 +6,29 @@ from rest_framework_jwt.views import obtain_jwt_token, verify_jwt_token, refresh
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
-router.register(r'user', views.UserViewSet)
-router.register(r'profileId', views.ProfileIdViewSet)
-router.register(r'providerProfileId', views.ProviderProfileIdViewSet)
-router.register(r'applicationId', views.ApplicationIdViewSet)
-router.register(r'locationId', views.LocationIdViewSet)
-router.register(r'jobPostId', views.JobPostIdViewSet)
+router.register(r'user/user$', views.UserViewSet)
+# router.register(r'user/profileId', views.ProfileIdViewSet)
+# router.register(r'user/providerProfileId', views.ProviderProfileIdViewSet)
+# router.register(r'user/applicationId', views.ApplicationIdViewSet)
+# router.register(r'user/locationId', views.LocationIdViewSet)
+# router.register(r'user/jobPostId', views.JobPostIdViewSet)
 
 urlpatterns = [
+    url(r'^user/admin', admin.site.urls),
     url(r'^$', views.index, name='index'),
-    # url(r'^user/$', views.UserList.as_view()),
-    # url(r'^user/(?P<userId>.+)$', views.UserDetail.as_view()),
+
+    url(r'^user$', views.UserCreation.as_view()),
+    url(r'^users$', views.UserList.as_view()),
+
+    url(r'^user/(?P<user_id>.+)$', views.UserDetail.as_view()),
 
     # endpoints for JWT token
-    url(r'^admin/', admin.site.urls),
-    url(r'^login/', obtain_jwt_token),
-    url(r'^verify/', verify_jwt_token),
-    url(r'^refresh/', refresh_jwt_token),
+    # url(r'^authService/login$', obtain_jwt_token),
+    url(r'^authService/login$', obtain_jwt_token),
+    url(r'^authService/verify$', verify_jwt_token),
+    url(r'^authService/refresh$', refresh_jwt_token),
 ]
+
+# urlpatterns = router.urls
 
 urlpatterns = format_suffix_patterns(urlpatterns)

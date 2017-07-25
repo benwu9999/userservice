@@ -12,7 +12,7 @@ class Compensation(models.Model):
         db_table = 'compensation'
         # unique_together = ("amount", "duration")
 
-    compensationId = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    compensation_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     amount=models.IntegerField(default=0, null=True)
     duration=models.CharField(max_length=200, null=True)
 

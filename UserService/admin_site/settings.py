@@ -11,10 +11,10 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
 import os
+from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
@@ -27,7 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-AUTH_USER_MODEL = 'UserService.User'
+AUTH_USER_MODEL = 'user_app.User'
 
 # Application definition
 
@@ -39,18 +39,42 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'UserService.apps.UserServiceConfig',
+    'rest_framework_jwt',
+    'corsheaders',  # for allowing CORS
+    'user_app.apps.UserServiceConfig',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # add CORS support
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# ------------- start of CSRF settings, not needed if your endpoints are not CSRF protected -----
+
+# This setting is ONLY for handling request from Angular2 application_client
+# allow django server to take field named "X-XSRF-TOKEN" in request header from application_client.
+# angular2 sets CRSF token in header with name "X-XSRF-TOKEN" by default
+CORS_ALLOW_HEADERS = default_headers + (
+    'X-XSRF-TOKEN',
+)
+
+# the default name of expected CSRF token is csrftoken by django
+# change it to 'x-xsrf-token', the commonly expected name
+# this IS case sensitive
+CSRF_COOKIE_NAME = 'XSRF-TOKEN'
+# ------------- end of CSRF settings, not needed if your endpoints are not CSRF protected -----
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ORIGIN_WHITELIST = (
+    'http://localhost:4200'
+)
 
 ROOT_URLCONF = 'admin_site.urls'
 
@@ -72,11 +96,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'admin_site.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
-if  os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine'):
+if os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine'):
     # Running on production App Engine, so connect to Google Cloud SQL using
     # the unix socket at /cloudsql/<your-cloudsql-connection string>
     DATABASES = {
@@ -126,19 +149,25 @@ AUTH_PASSWORD_VALIDATORS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
-       'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.AllowAny',
     ),
-#     comment out for now to allow easier testing
-#     'DEFAULT_PERMISSION_CLASSES': (
-#         'rest_framework.permissions.IsAuthenticated',
-#     ),
+    #     comment out for now to allow easier testing
+    #     'DEFAULT_PERMISSION_CLASSES': (
+    #         'rest_framework.permissions.IsAuthenticated',
+    #     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.BasicAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
+        # 'rest_framework.authentication.BasicAuthentication',
+    ),
+    'DEFAULT_RENDERER_CLASSES': (
+        'djangorestframework_camel_case.render.CamelCaseJSONRenderer',
+    ),
+
+    'DEFAULT_PARSER_CLASSES': (
+        'djangorestframework_camel_case.parser.CamelCaseJSONParser',
     ),
 }
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/
@@ -153,8 +182,23 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
-STATIC_ROOT='static'
+STATIC_ROOT = 'static'
 STATIC_URL = '/static/'
+
+# JWT_PAYLOAD_GET_USER_ID_HANDLER = 'jwt_auth.utils.jwt_get_user_id_from_payload_handler'
+
+
+JWT_AUTH = {
+    'JWT_PAYLOAD_GET_USER_ID_HANDLER':
+        'jwt_get_user_id_from_payload'
+}
+
+
+def jwt_get_user_id_from_payload(payload):
+    """
+    Override this function if user_id is formatted differently in payload
+    """
+
+    return payload.get('userId')

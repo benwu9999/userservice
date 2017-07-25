@@ -30,7 +30,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 #             profile:profile
 #         }))
 
-        user_id = validated_data.pop('userId')
+        user_id = validated_data.pop('user_id')
 
         compensation_data = validated_data.pop('profile').pop('compensation')
 
