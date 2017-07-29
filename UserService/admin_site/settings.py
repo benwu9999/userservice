@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     'rest_framework_jwt',
     'corsheaders',  # for allowing CORS
     'user_app.apps.UserServiceConfig',
+    'profile_app.apps.ProfileAppConfig',
+    'provider_profile_app.apps.ProviderProfileAppConfig',
 ]
 
 MIDDLEWARE = [
@@ -160,10 +162,11 @@ REST_FRAMEWORK = {
         # 'rest_framework.authentication.SessionAuthentication',
         # 'rest_framework.authentication.BasicAuthentication',
     ),
+    # convert json from snake to camel case
     'DEFAULT_RENDERER_CLASSES': (
         'djangorestframework_camel_case.render.CamelCaseJSONRenderer',
     ),
-
+    # convert json from camel to snake case
     'DEFAULT_PARSER_CLASSES': (
         'djangorestframework_camel_case.parser.CamelCaseJSONParser',
     ),

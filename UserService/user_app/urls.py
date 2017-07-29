@@ -5,12 +5,12 @@ from django.contrib import admin
 from rest_framework_jwt.views import obtain_jwt_token, verify_jwt_token, refresh_jwt_token
 from rest_framework.routers import DefaultRouter
 
-router = DefaultRouter()
-router.register(r'user/user$', views.UserViewSet)
+#router = DefaultRouter()
+#router.register(r'user/user$', views.UserViewSet)
 # router.register(r'user/profileId', views.ProfileIdViewSet)
 # router.register(r'user/providerProfileId', views.ProviderProfileIdViewSet)
 # router.register(r'user/applicationId', views.ApplicationIdViewSet)
-# router.register(r'user/locationId', views.LocationIdViewSet)
+#router.register(r'user/locationId', views.LocationIdViewSet)
 # router.register(r'user/jobPostId', views.JobPostIdViewSet)
 
 urlpatterns = [
@@ -18,9 +18,18 @@ urlpatterns = [
     url(r'^$', views.index, name='index'),
 
     url(r'^user$', views.UserCreation.as_view()),
-    url(r'^users$', views.UserList.as_view()),
-
+    # url(r'^user$', views.UserList.as_view()),
     url(r'^user/(?P<user_id>.+)$', views.UserDetail.as_view()),
+
+    # url(r'^user/activate$', views.ActivateUser.as_view()),
+    # url(r'^user/activateProfile$', views.UserCreation.as_view()),
+    # url(r'^user/activateLocation', views.UserCreation.as_view()),
+    # url(r'^user/addLocation', views.UserCreation.as_view()),
+    url(r'^user/addLocation$', views.LocationIdCreation.as_view()),
+
+    url(r'^user/addProfile$', views.ProfileIdCreation.as_view()),
+    # url(r'^user/addProviderProfile', views.UserCreation.as_view()),
+    # url(r'^user/addApplication', views.UserCreation.as_view()),
 
     # endpoints for JWT token
     # url(r'^authService/login$', obtain_jwt_token),

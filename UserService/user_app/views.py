@@ -1,12 +1,13 @@
 import logging
 from django.http import HttpResponse
 from rest_framework import generics, status
+from rest_framework.permissions import IsAuthenticated
 
 from rest_framework.response import Response
 from .serializers import *
 from rest_framework import viewsets
 
-
+from django.shortcuts import get_object_or_404, get_list_or_404
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +16,7 @@ def index(request):
     return HttpResponse("user service api")
 
 
-class UserCreation(generics.CreateAPIView):
+class UserCreation(generics.ListCreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
@@ -27,8 +28,8 @@ class UserCreation(generics.CreateAPIView):
             saved_user = user.save()
             for role_name in role_names:
                 role_data = {
-                    'role' : role_name,
-                    'user' : saved_user
+                    'role': role_name,
+                    'user': saved_user
                 }
                 role = RoleSerializer(data=role_data)
                 if role.is_valid():
@@ -39,17 +40,36 @@ class UserCreation(generics.CreateAPIView):
         else:
             return Response(user.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class UserList(generics.ListAPIView):
-    # TODO should be set to authenticated in production for superuser only
-    # permission_classes = (IsAuthenticated,)
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+
+# class UserList(generics.ListAPIView):
+#     # TODO should be set to authenticated in production for superuser only
+#     permission_classes = (IsAuthenticated,)
+#     queryset = User.objects.all()
+#     serializer_class = UserSerializer
+
 
 class UserDetail(generics.RetrieveUpdateDestroyAPIView):
     # override the default lookup field "PK" with the lookup field for this model
+    # TODO should be set to authenticated in production for superuser only
+    # permission_classes = (IsAuthenticated,)
     lookup_field = 'user_id'
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+    def get(self, request, *args, **kwargs):
+        resp = super(UserDetail, self).retrieve(request, *args, **kwargs)
+
+        fltr = {'user_id': resp.data['user_id']}
+
+        resp.data['roles'] = Role.objects.filter(**fltr).values_list('role', flat=True)
+
+        resp.data['profile_ids'] = ProfileId.objects.filter(**fltr).values_list('profile_id', flat=True).order_by(
+            'updated')
+
+        resp.data['location_ids'] = LocationId.objects.filter(**fltr).values_list('location_id', flat=True).order_by(
+            'updated')
+
+        return resp
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -74,38 +94,75 @@ class UserViewSet(viewsets.ModelViewSet):
             d['user'] = user
         return d
 
-#     def get_object(self):
-#         queryset = self.get_queryset()
-#         filter = {id=self.request.query_params['id']}
-#         user = get_object_or_404(queryset, **filter)
-#         d = {}
-#         d['applicationIds'] = user.application_id_set.all()
-#         d['locationIds'] = user.location_id_set.all()
-#         d['applicationIds'] = user.application_id_set.all()
-#         d['user'] = user
-#         return d
+        #     def get_object(self):
+        #         queryset = self.get_queryset()
+        #         filter = {id=self.request.query_params['id']}
+        #         user = get_object_or_404(queryset, **filter)
+        #         d = {}
+        #         d['applicationIds'] = user.application_id_set.all()
+        #         d['locationIds'] = user.location_id_set.all()
+        #         d['applicationIds'] = user.application_id_set.all()
+        #         d['user'] = user
+        #         return d
 
-    # b.entry_set.all()
+        # b.entry_set.all()
 
-class ProfileIdViewSet(viewsets.ModelViewSet):
+
+class ProfileIdCreation(generics.CreateAPIView):
     queryset = ProfileId.objects.all()
     serializer_class = ProfileIdSerializer
-    model = ProfileId
+
+    def post(self, request, *args, **kwargs):
+        user_id = request.data.pop('user_id')
+        # queryset = User.objects.all()
+        # filter = {'user_id': user_id}
+        user = get_object_or_404(User, pk=user_id)
+
+        data = {
+            'profile_id': request.data['profile_id'],
+            'user': user
+        }
+        profile = ProfileIdSerializer(data=data)
+        if profile.is_valid():
+            profile.save()
+        else:
+            return Response(profile.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(profile.data, status=status.HTTP_201_CREATED)
+
 
 class ApplicationIdViewSet(viewsets.ModelViewSet):
     queryset = ApplicationId.objects.all()
     serializer_class = ApplicationIdSerializer
     model = ApplicationId
 
-class LocationIdViewSet(viewsets.ModelViewSet):
+
+class LocationIdCreation(generics.CreateAPIView):
     queryset = LocationId.objects.all()
     serializer_class = LocationIdSerializer
-    model = LocationId
+
+    def post(self, request, *args, **kwargs):
+        user_id = request.data.pop('user_id')
+        # queryset = User.objects.all()
+        # filter = {'user_id': user_id}
+        user = get_object_or_404(User, pk=user_id)
+
+        data = {
+            'location_id': request.data['location_id'],
+            'user': user
+        }
+        location = LocationIdSerializer(data=data)
+        if location.is_valid():
+            location.save()
+        else:
+            return Response(location.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(location.data, status=status.HTTP_201_CREATED)
+
 
 class JobPostIdViewSet(viewsets.ModelViewSet):
     queryset = JobPostId.objects.all()
     serializer_class = JobPostIdSerializer
     model = JobPostId
+
 
 class ProviderProfileIdViewSet(viewsets.ModelViewSet):
     queryset = ProviderProfileId.objects.all()

@@ -1,23 +1,25 @@
 from django.db import models
-from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 import uuid
 
-class Compensation(models.Model):
+from admin_site import settings
 
+
+class Compensation(models.Model):
     """
     data model for compensation information
     """
+
     class Meta:
         db_table = 'compensation'
         # unique_together = ("amount", "duration")
 
     compensation_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    amount=models.IntegerField(default=0, null=True)
-    duration=models.CharField(max_length=200, null=True)
+    amount = models.IntegerField(default=0, null=True)
+    duration = models.CharField(max_length=200, null=True)
+
 
 class Profile(models.Model):
-
     profile_id = models.UUIDField(primary_key=True, default=uuid.uuid5, editable=False)
     title = models.CharField(_('profile name'), max_length=200)
     description = models.CharField(_('description'), max_length=200)
@@ -31,8 +33,7 @@ class Profile(models.Model):
         null=True,
         blank=True
     )
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = _('profile')

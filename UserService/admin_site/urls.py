@@ -21,6 +21,8 @@ from django.views.generic.base import RedirectView
 
 urlpatterns = [
     url(r'^',include('user_app.urls')),
+    url(r'^',include('profile_app.urls')),
+    url(r'^',include('provider_profile_app.urls')),
     url(r'^admin/', admin.site.urls),
     url(r'^docs/', include_docs_urls(title='API Info'), name='APIInfo'),
     url(r'^.*$', RedirectView.as_view(url='/docs/', permanent=False)),
