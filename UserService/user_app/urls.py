@@ -17,19 +17,19 @@ urlpatterns = [
     url(r'^user/admin', admin.site.urls),
     url(r'^$', views.index, name='index'),
 
-    url(r'^user$', views.UserCreation.as_view()),
-    # url(r'^user$', views.UserList.as_view()),
-    url(r'^user/(?P<user_id>.+)$', views.UserDetail.as_view()),
-
     # url(r'^user/activate$', views.ActivateUser.as_view()),
     # url(r'^user/activateProfile$', views.UserCreation.as_view()),
     # url(r'^user/activateLocation', views.UserCreation.as_view()),
     # url(r'^user/addLocation', views.UserCreation.as_view()),
-    url(r'^user/addLocation$', views.LocationIdCreation.as_view()),
 
-    url(r'^user/addProfile$', views.ProfileIdCreation.as_view()),
-    # url(r'^user/addProviderProfile', views.UserCreation.as_view()),
-    # url(r'^user/addApplication', views.UserCreation.as_view()),
+    url(r'^user/rel/addLocation$', views.LocationIdCreation.as_view()),
+    url(r'^user/rel/addProfile$', views.ProfileIdCreation.as_view()),
+    url(r'^user/rel/addProviderProfile$', views.ProviderProfileIdCreation.as_view()),
+    url(r'^user/rel/addApplication$', views.ApplicationIdCreation.as_view()),
+
+    url(r'^user$', views.UserCreation.as_view()),
+    # url(r'^user$', views.UserList.as_view()),
+    url(r'^user/(?P<user_id>.+)$', views.UserDetail.as_view()),
 
     # endpoints for JWT token
     # url(r'^authService/login$', obtain_jwt_token),

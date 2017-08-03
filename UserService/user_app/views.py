@@ -130,11 +130,9 @@ class ProfileIdCreation(generics.CreateAPIView):
         return Response(profile.data, status=status.HTTP_201_CREATED)
 
 
-class ApplicationIdViewSet(viewsets.ModelViewSet):
+class ApplicationIdCreation(generics.CreateAPIView):
     queryset = ApplicationId.objects.all()
     serializer_class = ApplicationIdSerializer
-    model = ApplicationId
-
 
 class LocationIdCreation(generics.CreateAPIView):
     queryset = LocationId.objects.all()
@@ -158,13 +156,28 @@ class LocationIdCreation(generics.CreateAPIView):
         return Response(location.data, status=status.HTTP_201_CREATED)
 
 
-class JobPostIdViewSet(viewsets.ModelViewSet):
+class JobPostIdCreation(generics.CreateAPIView):
     queryset = JobPostId.objects.all()
     serializer_class = JobPostIdSerializer
-    model = JobPostId
 
 
-class ProviderProfileIdViewSet(viewsets.ModelViewSet):
+class ProviderProfileIdCreation(generics.CreateAPIView):
     queryset = ProviderProfileId.objects.all()
     serializer_class = ProviderProfileIdSerializer
-    model = ProviderProfileId
+
+    def post(self, request, *args, **kwargs):
+        user_id = request.data.pop('user_id')
+        # queryset = User.objects.all()
+        # filter = {'user_id': user_id}
+        user = get_object_or_404(User, pk=user_id)
+
+        data = {
+            'profile_provider_id': request.data['profile_provider_id'],
+            'user': user
+        }
+        provider_profile = ProviderProfileIdSerializer(data=data)
+        if provider_profile.is_valid():
+            provider_profile.save()
+        else:
+            return Response(provider_profile.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(provider_profile.data, status=status.HTTP_201_CREATED)

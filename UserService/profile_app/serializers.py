@@ -20,7 +20,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = ('profileId', 'title', 'description', 'phone', 'skills', 'compensation', 'active')
+        fields = '__all__'
 
     def create(self, validated_data):
 
@@ -32,7 +32,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
         user_id = validated_data.pop('user_id')
 
-        compensation_data = validated_data.pop('profile').pop('compensation')
+        compensation_data = validated_data['profile'].pop('compensation')
 
         # create and insert compensation into db ONLY if it doesn't already exists, using "get_or_create"
         compensation, created = Compensation.objects.get_or_create(**compensation_data)
