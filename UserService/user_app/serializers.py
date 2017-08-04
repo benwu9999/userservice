@@ -91,16 +91,14 @@ class ProfileIdSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def create(self, validated_data):
-        user = User.objects.create(user_id=validated_data['user_id'])
-        user.set_password(validated_data['password'])
-        user.is_active = True
-        user.save()
-        return user
+        id, created = ProfileId.objects.get_or_create(**validated_data);
+        return id;
 
     def to_representation(self, instance):
         ret = super(ProfileIdSerializer, self).to_representation(instance)
         ret['profile_id'] = ret['profile_id'].replace('-', '')
         return ret
+
 
 class ProviderProfileIdSerializer(serializers.ModelSerializer):
     class Meta:

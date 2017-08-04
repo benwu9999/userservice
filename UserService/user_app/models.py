@@ -28,21 +28,21 @@ class ProfileId(AbstractMapping):
     profile_id = models.CharField(primary_key=True, max_length=200)
 
     class Meta:
-        db_table = 'profile_id'
+        db_table = 'user_profile_id'
 
 
 class ProviderProfileId(AbstractMapping):
     provider_profile_id = models.CharField(primary_key=True, max_length=200)
 
     class Meta:
-        db_table = 'provider_profile_id'
+        db_table = 'user_provider_profile_id'
 
 
 class ApplicationId(AbstractMapping):
     application_id = models.CharField(primary_key=True, max_length=200)
 
     class Meta:
-        db_table = 'application_id'
+        db_table = 'user_application_id'
 
 
 class LocationId(AbstractMapping):
@@ -51,21 +51,21 @@ class LocationId(AbstractMapping):
     location_id = models.CharField(primary_key=True, max_length=32, editable=True)
 
     class Meta:
-        db_table = 'location_id'
+        db_table = 'user_location_id'
 
 
 class JobPostId(AbstractMapping):
     job_post_id = models.CharField(primary_key=True, max_length=200)
 
     class Meta:
-        db_table = 'job_post_id'
+        db_table = 'user_job_post_id'
 
 
 class Role(AbstractMapping):
     role = models.CharField(null=True, blank=True, max_length=200)
 
     class Meta:
-        db_table = 'role'
+        db_table = 'user_role'
 
 
 class User(AbstractBaseUser, PermissionsMixin):

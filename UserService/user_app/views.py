@@ -29,7 +29,7 @@ class UserCreation(generics.ListCreateAPIView):
             for role_name in role_names:
                 role_data = {
                     'role': role_name,
-                    'user': saved_user
+                    'user': saved_user.pk
                 }
                 role = RoleSerializer(data=role_data)
                 if role.is_valid():
@@ -122,12 +122,12 @@ class ProfileIdCreation(generics.CreateAPIView):
             'profile_id': request.data['profile_id'],
             'user': user
         }
-        profile = ProfileIdSerializer(data=data)
-        if profile.is_valid():
-            profile.save()
+        profile_id_slz = ProfileIdSerializer(data=data)
+        if profile_id_slz.is_valid():
+            profile_id_slz.save()
         else:
-            return Response(profile.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response(profile.data, status=status.HTTP_201_CREATED)
+            return Response(profile_id_slz.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(profile_id_slz.data, status=status.HTTP_201_CREATED)
 
 
 class ApplicationIdCreation(generics.CreateAPIView):
