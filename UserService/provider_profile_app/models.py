@@ -15,3 +15,4 @@ class ProviderProfile(models.Model):
     class Meta:
         verbose_name = _('provider profile')
         verbose_name_plural = _('provider profiles')
+        db_table = 'provider_profile'
