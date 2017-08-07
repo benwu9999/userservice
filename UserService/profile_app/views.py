@@ -1,19 +1,16 @@
 # Create your views here.
 import logging
 
+from requests import Response
+from rest_framework import generics, status
+from models import Profile, Compensation, Skill, SkillId
 from django.http import HttpResponse
-
-from serializers import ProfileSerializer, SkillSerializer, CompensationSerializer, SkillIdSerializer
+from serializers import ProfileSerializer
 
 
 def index(request):
     return HttpResponse("Profile API")
 
-
-from rest_framework import generics, status
-from models import Profile, Compensation, Skill, SkillId
-from rest_framework.response import Response
-from rest_framework.views import APIView
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +33,8 @@ class ProfileList(generics.ListCreateAPIView):
 
         profile = Profile(**request.data)
         profile.save()
-            # create skills and mapping
+
+        # create skills and mapping
         for skill in skills:
             skill_data = {
                 'skill': skill,
@@ -53,10 +51,13 @@ class ProfileList(generics.ListCreateAPIView):
 
 
 class ProfileDetail(generics.RetrieveUpdateDestroyAPIView):
-    # override the default lookup field "PK" with the lookup field for this model
+
+    # override the default lookup field "PK" with
+    # the lookup field for this model
     lookup_field = 'profile_id'
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
+
 
 # class AllIdsList(APIView):
 #     """
