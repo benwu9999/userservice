@@ -30,8 +30,6 @@ class ProfileSerializer(serializers.ModelSerializer):
 #             profile:profile
 #         }))
 
-        user_id = validated_data.pop('user_id')
-
         compensation_data = validated_data['profile'].pop('compensation')
 
         # create and insert compensation into db ONLY if it doesn't already exists, using "get_or_create"

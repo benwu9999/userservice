@@ -20,12 +20,11 @@ class Compensation(models.Model):
 
 
 class Profile(models.Model):
-    profile_id = models.UUIDField(primary_key=True, default=uuid.uuid5, editable=False)
+    profile_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(_('profile name'), max_length=200)
     description = models.CharField(_('description'), max_length=200)
     phone = models.CharField(_('phone'), max_length=10)
     skills = models.CharField(_('list of skills'), max_length=45)
-    active = models.BooleanField(_('active'), default=True)
     compensation = models.ForeignKey(
         Compensation,
         on_delete=models.SET_NULL,
@@ -33,8 +32,8 @@ class Profile(models.Model):
         null=True,
         blank=True
     )
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = _('profile')
         verbose_name_plural = _('profiles')
+        db_table = 'profile'
