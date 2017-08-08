@@ -29,3 +29,19 @@ when any request from user needs authentication.  Requset should contain JWT tok
 send as a POST request to this REST endpoint and biz logic should only proceed if this endpoint
 returns status "200 OK", this endpoint essentially servs as a gatekeeper for all requests
 needing authentication.
+
+caveat:
+probably need to install this first to setup MYSQL
+sudo apt-get install libmysqlclient-dev
+
+If pip install fails with "ConfigParser" message, make sure your virtual env python is version
+2.x.x, then run the following command:
+sudo {python} {pip} install ConfigParser
+where {python} is the path to your 2.x.x python binary and {path} the path to pip
+so an exemplary command should look like this:
+sudo /env/bin/python /env/bin/pip install ConfigParser
+
+if pip install fails with "EnvironmentError: mysql_config not found"
+run "sudo apt-get install libmysqlclient-dev", then install again
+
+

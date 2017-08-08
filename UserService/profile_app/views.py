@@ -26,7 +26,7 @@ class ProfileList(generics.ListCreateAPIView):
         request.data.pop('active', None)
 
         compensation = request.data.pop('compensation')
-        comp, created = Compensation.objects.get_or_create(**compensation);
+        comp, created = Compensation.objects.get_or_create(**compensation)
         request.data['compensation'] = comp
 
         skills = request.data.pop('skills')
@@ -40,7 +40,7 @@ class ProfileList(generics.ListCreateAPIView):
                 'skill': skill,
                 'profile': profile.pk
             }
-            skill, created = Skill.objects.get_or_create(**skill_data);
+            skill, created = Skill.objects.get_or_create(**skill_data)
             skill_mapping = {
                 'profile': profile.pk,
                 'skill': skill.pk
