@@ -1,10 +1,12 @@
 # Create your views here.
 import logging
+from datetime import datetime
 
-from requests import Response
-from rest_framework import generics, status
-from models import Profile, Compensation, Skill, SkillId
 from django.http import HttpResponse
+from rest_framework import generics, status
+from rest_framework.response import Response
+
+from models import Profile, Compensation, Skill, SkillId
 from serializers import ProfileSerializer
 
 
@@ -24,30 +26,35 @@ class ProfileList(generics.ListCreateAPIView):
     def post(self, request, *args, **kwargs):
 
         request.data.pop('active', None)
-
-        compensation = request.data.pop('compensation')
-        comp, created = Compensation.objects.get_or_create(**compensation)
-        request.data['compensation'] = comp
-
         skills = request.data.pop('skills')
 
-        profile = Profile(**request.data)
+        now = datetime.utcnow()
+
+        compensation = request.data.pop('compensation')
+        compensation['created'] = now
+        comp, created = Compensation.objects.get_or_create(**compensation)
+
+        profile_dict = request.data
+        if 'profile_id' not in profile_dict:
+            profile_dict['created'] = now
+        profile = Profile(**profile_dict)
         profile.save()
 
         # create skills and mapping
         for skill in skills:
             skill_data = {
                 'skill': skill,
-                'profile': profile.pk
+                # 'profile': profile.pk
             }
             skill, created = Skill.objects.get_or_create(**skill_data)
             skill_mapping = {
-                'profile': profile.pk,
-                'skill': skill.pk
+                'profile': profile,
+                'skill': skill
             }
-            skill_d, created = SkillId.objects.get_or_create(**skill_mapping);
+            mapping, created = SkillId.objects.get_or_create(**skill_mapping);
 
-        return Response(ProfileSerializer(profile).data, status=status.HTTP_201_CREATED)
+        s = ProfileSerializer(profile)
+        return Response(s.data, status=status.HTTP_201_CREATED)
 
 
 class ProfileDetail(generics.RetrieveUpdateDestroyAPIView):

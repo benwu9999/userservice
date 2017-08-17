@@ -2,18 +2,9 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 import uuid
 
-from admin_site import settings
 from django_unixdatetimefield import UnixDateTimeField
 
-
-class HasTime(models.Model):
-    class Meta:
-        abstract = True
-
-    updated = UnixDateTimeField(auto_now=True)
-
-
-class Compensation(HasTime):
+class Compensation(models.Model):
     """
     data model for compensation information
     """
@@ -25,9 +16,9 @@ class Compensation(HasTime):
     compensation_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     amount = models.IntegerField(default=0, null=True)
     duration = models.CharField(max_length=200, null=True)
+    created = UnixDateTimeField()
 
-
-class Profile(HasTime):
+class Profile(models.Model):
     class Meta:
         verbose_name = _('profile')
         verbose_name_plural = _('profiles')
@@ -41,20 +32,22 @@ class Profile(HasTime):
         Compensation,
         on_delete=models.SET_NULL,
         db_column='compensation_id',
-        null=True,
-        blank=True,
+        null=True
     )
+    created = UnixDateTimeField()
+    modified = UnixDateTimeField(auto_now=True)
 
 
-class Skill(HasTime):
+class Skill(models.Model):
     class Meta:
         db_table = 'profile_skill'
 
     skill_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     skill = models.CharField(max_length=200)
+    created = UnixDateTimeField(auto_now=True)
 
 
-class SkillId(HasTime):
+class SkillId(models.Model):
     class Meta:
         db_table = 'profile_skill_id'
 
@@ -68,3 +61,6 @@ class SkillId(HasTime):
         on_delete=models.CASCADE,
         db_column='skill_id'
     )
+    created = UnixDateTimeField(auto_now=True)
+
+

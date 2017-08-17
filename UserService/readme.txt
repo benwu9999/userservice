@@ -6,14 +6,10 @@ mysql -u root -p
 password should be 'admin' if you didn't set it up, google if you can't find correct password
 then run creation database command:
 create database user;
-create database profile;
-create database provider_profile;
 2. create user to access the new database, this user is from settings.py in this project
 in mysql client, create the user along with password, user and password should match settings.py
 i.e.:
 grant all privileges on user.* to 'oneseek'@'localhost' identified by "jobpost8531162";
-grant all privileges on profile.* to 'oneseek'@'localhost' identified by "jobpost8531162";
-grant all privileges on provider_profile.* to 'oneseek'@'localhost' identified by "jobpost8531162";
 
 
 To test obtaining a JWT token and verifying one:
@@ -45,3 +41,10 @@ if pip install fails with "EnvironmentError: mysql_config not found"
 run "sudo apt-get install libmysqlclient-dev", then install again
 
 
+rerun makemigration and migrate from scratch:
+
+login as root (root)
+
+drop database user;
+create database user;
+grant all privileges on user.* to 'neseek'@'localhost' identified by "jobpost8531162";

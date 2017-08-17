@@ -11,14 +11,13 @@ from django.conf import settings
 
 
 # fields in model will use camel case so django can parse json which is also camel case
-
 class AbstractMapping(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         db_column='user_id'
     )
-    updated = UnixDateTimeField(auto_now=True)
+    created = UnixDateTimeField(auto_now=True)
 
     class Meta:
         abstract = True
@@ -81,28 +80,13 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(_('email address'), validators=[validate_email, ])
     phone = models.CharField(validators=[phone_validator, ], max_length=15, null=True, blank=True)
     # not considering provider profile for now, assume all users are seekers
-    active_profile_id = models.ForeignKey(
-        ProfileId,
-        on_delete=models.CASCADE,
-        related_name='+',
-        blank=True, null=True,
-        db_column='active_profile_id'
-    )
-    active_provider_profile_id = models.ForeignKey(
-        ProviderProfileId,
-        on_delete=models.CASCADE,
-        related_name='+',
-        blank=True, null=True,
-        db_column='active_provider_profile_id'
-    )
-    active_location_id = models.ForeignKey(
-        LocationId,
-        on_delete=models.CASCADE,
-        related_name='+',
-        blank=True, null=True,
-        db_column='active_location_id'
-    )
+    active_profile_id = models.CharField(max_length=200, null=True, blank=True)
+    active_provider_profile_id = models.CharField(max_length=200, null=True, blank=True)
+    active_location_id = models.CharField(max_length=200, null=True, blank=True)
     active = models.BooleanField(_('active'), default=True)
+
+    created = UnixDateTimeField()
+    modified = UnixDateTimeField(auto_now=True)
 
     objects = UserManager()
 

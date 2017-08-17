@@ -1,4 +1,6 @@
 import logging
+
+from datetime import datetime
 from django.http import HttpResponse
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
@@ -21,24 +23,32 @@ class UserCreation(generics.ListCreateAPIView):
     serializer_class = UserSerializer
 
     def post(self, request, *args, **kwargs):
+        request.data.pop('locations')
+        request.data.pop('profiles')
+
         role_names = request.data.pop('roles')
-        user = UserSerializer(data=request.data)
+        now = datetime.utcnow()
+        request.data['created'] = now
+        request.data['modified'] = now
+        user = User(**request.data)
+        user.set_password(request.data['password'])
+        user.is_active = True
+        user.save()
         # super(UserCreation, self).post(request, *args, **kwargs)
-        if user.is_valid():
-            saved_user = user.save()
-            for role_name in role_names:
-                role_data = {
-                    'role': role_name,
-                    'user': saved_user.pk
-                }
-                role = RoleSerializer(data=role_data)
-                if role.is_valid():
-                    role.save()
-                else:
-                    return Response(role.errors, status=status.HTTP_400_BAD_REQUEST)
-            return Response(user.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(user.errors, status=status.HTTP_400_BAD_REQUEST)
+        for role_name in role_names:
+            role_data = {
+                'role': role_name,
+                'user': user.pk,
+                'created': now
+            }
+            role = RoleSerializer(data=role_data)
+            if role.is_valid():
+                role.save()
+            else:
+                return Response(role.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
+        # else:
+        #     return Response(user.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # class UserList(generics.ListAPIView):
@@ -64,10 +74,13 @@ class UserDetail(generics.RetrieveUpdateDestroyAPIView):
         resp.data['roles'] = Role.objects.filter(**fltr).values_list('role', flat=True)
 
         resp.data['profile_ids'] = ProfileId.objects.filter(**fltr).values_list('profile_id', flat=True).order_by(
-            'updated')
+            'created')
 
         resp.data['location_ids'] = LocationId.objects.filter(**fltr).values_list('location_id', flat=True).order_by(
-            'updated')
+            'created')
+
+        resp.data['application_ids'] = ApplicationId.objects.filter(**fltr).values_list('application_id', flat=True).order_by(
+            'created')
 
         return resp
 
@@ -120,7 +133,8 @@ class ProfileIdCreation(generics.CreateAPIView):
 
         data = {
             'profile_id': request.data['profile_id'],
-            'user': user
+            'user': user,
+            'created': datetime.utcnow()
         }
         profile_id_slz = ProfileIdSerializer(data=data)
         if profile_id_slz.is_valid():
@@ -146,7 +160,8 @@ class LocationIdCreation(generics.CreateAPIView):
 
         data = {
             'location_id': request.data['location_id'],
-            'user': user
+            'user': user,
+            'created': datetime.utcnow()
         }
         location = LocationIdSerializer(data=data)
         if location.is_valid():
@@ -172,8 +187,9 @@ class ProviderProfileIdCreation(generics.CreateAPIView):
         user = get_object_or_404(User, pk=user_id)
 
         data = {
-            'profile_provider_id': request.data['profile_provider_id'],
-            'user': user
+            'provider_profile_id': request.data['profile_id'],
+            'user': user,
+            'created': datetime.utcnow()
         }
         provider_profile = ProviderProfileIdSerializer(data=data)
         if provider_profile.is_valid():
