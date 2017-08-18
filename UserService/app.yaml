@@ -1,8 +1,8 @@
 # [START django_app]
 runtime: python27
-api_version: 10
+api_version: 1
 threadsafe: yes
-service: UserService
+service: user-service
 
 handlers:
 - url: /static
