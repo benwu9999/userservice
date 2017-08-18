@@ -2,6 +2,7 @@
 import logging
 from datetime import datetime
 
+import sys
 from django.http import HttpResponse
 from rest_framework import generics, status
 from rest_framework.response import Response
@@ -15,12 +16,11 @@ def index(request):
     return HttpResponse("Profile API")
 
 
-
-
 logger = logging.getLogger(__name__)
 
+
 # uncomment the line below if you want to enable csrf protection for this view
-#@method_decorator(csrf_protect, name='post')
+# @method_decorator(csrf_protect, name='post')
 class ProviderProfileList(generics.ListCreateAPIView):
     queryset = ProviderProfile.objects.all()
     serializer_class = ProviderProfileSerializer
@@ -50,8 +50,8 @@ class ProviderProfileList(generics.ListCreateAPIView):
 
         return Response(ProviderProfileSerializer(profile).data, status=status.HTTP_201_CREATED)
 
-class ProviderProfileDetail(generics.RetrieveUpdateDestroyAPIView):
 
+class ProviderProfileDetail(generics.RetrieveUpdateDestroyAPIView):
     # override the default lookup field "PK" with the lookup field for this model
     lookup_field = 'profile_id'
     queryset = ProviderProfile.objects.all()
@@ -67,8 +67,23 @@ class AllIdsList(APIView):
         allIdList = sorted([x['profileId'] for x in ProviderProfile.objects.values('profileId')])
         return Response(data=allIdList)
 
-class ProviderProfileById(APIView):
 
+class ProviderProfileById(APIView):
     def get(self, request, format=None):
-        profiles = ProviderProfile.objects.filter(profile_id__in = request.data['ids'].split(','))
+        profiles = ProviderProfile.objects.filter(profile_id__in=request.data['ids'].split(','))
         return Response(profiles)
+
+
+class ProviderProfileSearch(APIView):
+    def get(self, request, format=None):
+        try:
+            if 'ids' in request.query_params:
+                # data['locations'] = LocationSerializer(Location.objects.filter(
+                #     pk__in=request.query_params['ids'].split(',')), many=True)
+
+                serializer = ProviderProfileSerializer(ProviderProfile.objects.filter(
+                    pk__in=request.query_params['ids'].split(',')), many=True)
+
+                return Response(serializer.data)
+        except:
+            return Response(sys.exc_info()[0])

@@ -72,9 +72,13 @@ class UserDetail(generics.RetrieveUpdateDestroyAPIView):
         fltr = {'user_id': resp.data['user_id']}
 
         resp.data['roles'] = Role.objects.filter(**fltr).values_list('role', flat=True)
-
-        resp.data['profile_ids'] = ProfileId.objects.filter(**fltr).values_list('profile_id', flat=True).order_by(
-            'created')
+        if 'SEEKER' in resp.data['roles']:
+            resp.data['profile_ids'] = ProfileId.objects.filter(**fltr).values_list('profile_id', flat=True).order_by(
+                'created')
+        else:
+            resp.data['profile_ids'] = ProviderProfileId.objects.filter(**fltr).\
+                values_list('provider_profile_id', flat=True).order_by(
+                'created')
 
         resp.data['location_ids'] = LocationId.objects.filter(**fltr).values_list('location_id', flat=True).order_by(
             'created')

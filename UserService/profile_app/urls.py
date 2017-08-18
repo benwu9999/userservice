@@ -22,9 +22,9 @@ urlpatterns = [
     url(r'^$', views.index, name='index'),
 
     # need the '/' before $ to properly route call to generics.ListCreateAPIView
-    url(r'^profile$', views.ProfileList.as_view()),
-
     # supports /profile/{profileId}
+    url(r'^profile/$', views.ProfileList.as_view()),
+    url(r'^profile/search?', views.ProfileSearch.as_view()),
     url(r'^profile/(?P<profileId>.+)$', views.ProfileDetail.as_view()),
 
     # url(r'^profile/allIds$',views.AllIdsList.as_view()),

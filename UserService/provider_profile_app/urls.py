@@ -20,12 +20,8 @@ from . import views
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
 
-    url(r'^providerProfile$', views.ProviderProfileList.as_view()),
-
+    url(r'^providerProfile/$', views.ProviderProfileList.as_view()),
+    url(r'^providerProfile/search?', views.ProviderProfileSearch.as_view()),
     # supports /profile/{profileId}
     url(r'^providerProfile/(?P<profileId>.+)$', views.ProviderProfileDetail.as_view()),
-
-    url(r'^providerProfile/allIds$',views.AllIdsList.as_view()),
-    url(r'^providerProfile/ids=$',views.ProviderProfileById.as_view()),
-    url(r'^admin/', admin.site.urls),
 ]

@@ -2,9 +2,11 @@
 import logging
 from datetime import datetime
 
+import sys
 from django.http import HttpResponse
 from rest_framework import generics, status
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from models import Profile, Compensation, Skill, SkillId
 from serializers import ProfileSerializer
@@ -65,6 +67,20 @@ class ProfileDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
 
+
+class ProfileSearch(APIView):
+    def get(self, request, format=None):
+        try:
+            if 'ids' in request.query_params:
+                # data['locations'] = LocationSerializer(Location.objects.filter(
+                #     pk__in=request.query_params['ids'].split(',')), many=True)
+
+                serializer = ProfileSerializer(Profile.objects.filter(
+                    pk__in=request.query_params['ids'].split(',')), many=True)
+
+                return Response(serializer.data)
+        except:
+            return Response(sys.exc_info()[0])
 
 # class AllIdsList(APIView):
 #     """
