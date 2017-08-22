@@ -5,12 +5,12 @@ from django.contrib import admin
 from rest_framework_jwt.views import obtain_jwt_token, verify_jwt_token, refresh_jwt_token
 from rest_framework.routers import DefaultRouter
 
-#router = DefaultRouter()
-#router.register(r'user/user$', views.UserViewSet)
+# router = DefaultRouter()
+# router.register(r'user/user$', views.UserViewSet)
 # router.register(r'user/profileId', views.ProfileIdViewSet)
 # router.register(r'user/providerProfileId', views.ProviderProfileIdViewSet)
 # router.register(r'user/applicationId', views.ApplicationIdViewSet)
-#router.register(r'user/locationId', views.LocationIdViewSet)
+# router.register(r'user/locationId', views.LocationIdViewSet)
 # router.register(r'user/jobPostId', views.JobPostIdViewSet)
 
 urlpatterns = [
@@ -23,8 +23,16 @@ urlpatterns = [
     # url(r'^user/addLocation', views.UserCreation.as_view()),
 
     url(r'^user/rel/addLocation$', views.LocationIdCreation.as_view()),
+    url(r'^user/rel/deleteLocation', views.DeleteLocation.as_view()),
+    url(r'^user/rel/activateLocation', views.ActivateLocation.as_view()),
+
     url(r'^user/rel/addProfile$', views.ProfileIdCreation.as_view()),
+    url(r'^user/rel/deleteProfile', views.DeleteProfile.as_view()),
+    url(r'^user/rel/activateProfile', views.ActivateProfile.as_view()),
+
     url(r'^user/rel/addProviderProfile$', views.ProviderProfileIdCreation.as_view()),
+    url(r'^user/rel/deleteProviderProfile', views.DeleteProviderProfile.as_view()),
+
     url(r'^user/rel/addApplication$', views.ApplicationIdCreation.as_view()),
 
     url(r'^user$', views.UserCreation.as_view()),

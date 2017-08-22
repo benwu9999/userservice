@@ -76,14 +76,15 @@ class UserDetail(generics.RetrieveUpdateDestroyAPIView):
             resp.data['profile_ids'] = ProfileId.objects.filter(**fltr).values_list('profile_id', flat=True).order_by(
                 'created')
         else:
-            resp.data['profile_ids'] = ProviderProfileId.objects.filter(**fltr).\
+            resp.data['profile_ids'] = ProviderProfileId.objects.filter(**fltr). \
                 values_list('provider_profile_id', flat=True).order_by(
                 'created')
 
         resp.data['location_ids'] = LocationId.objects.filter(**fltr).values_list('location_id', flat=True).order_by(
             'created')
 
-        resp.data['application_ids'] = ApplicationId.objects.filter(**fltr).values_list('application_id', flat=True).order_by(
+        resp.data['application_ids'] = ApplicationId.objects.filter(**fltr).values_list('application_id',
+                                                                                        flat=True).order_by(
             'created')
 
         return resp
@@ -148,9 +149,25 @@ class ProfileIdCreation(generics.CreateAPIView):
         return Response(profile_id_slz.data, status=status.HTTP_201_CREATED)
 
 
+class DeleteProfile(generics.CreateAPIView):
+    def post(self, request, *args, **kwargs):
+        profile_id = request.data.pop('profile_id')
+        profile_rel = ProfileId.objects.get(pk=profile_id)
+        if profile_rel:
+            profile_rel.delete()
+
+        user_id = request.data.pop('user_id')
+        user = User.objects.get(pk=user_id)
+        if user and user.active_profile_id == profile_id:
+            user.active_profile_id = None;
+            user.save();
+        return Response(status=status.HTTP_200_OK)
+
+
 class ApplicationIdCreation(generics.CreateAPIView):
     queryset = ApplicationId.objects.all()
     serializer_class = ApplicationIdSerializer
+
 
 class LocationIdCreation(generics.CreateAPIView):
     queryset = LocationId.objects.all()
@@ -173,6 +190,21 @@ class LocationIdCreation(generics.CreateAPIView):
         else:
             return Response(location.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(location.data, status=status.HTTP_201_CREATED)
+
+
+class DeleteLocation(generics.CreateAPIView):
+    def post(self, request, *args, **kwargs):
+        location_id = request.data.pop('location_id')
+        location_rel = LocationId.objects.get(pk=location_id)
+        if location_rel:
+            location_rel.delete()
+
+        user_id = request.data.pop('user_id')
+        user = User.objects.get(pk=user_id)
+        if user and user.active_location_id == location_id:
+            user.active_location_id = None;
+            user.save();
+        return Response(status=status.HTTP_200_OK)
 
 
 class JobPostIdCreation(generics.CreateAPIView):
@@ -201,3 +233,36 @@ class ProviderProfileIdCreation(generics.CreateAPIView):
         else:
             return Response(provider_profile.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(provider_profile.data, status=status.HTTP_201_CREATED)
+
+
+class DeleteProviderProfile(generics.CreateAPIView):
+    def post(self, request, *args, **kwargs):
+        provider_profile_id = request.data.pop('provider_profile_id')
+        provider_profile = ProviderProfileId.objects.get(pk=provider_profile_id)
+        if provider_profile:
+            provider_profile.delete()
+
+        user_id = request.data.pop('user_id')
+        user = User.objects.get(pk=user_id)
+        if user and user.active_profile_id == provider_profile_id:
+            user.active_profile_id = None;
+            user.save();
+        return Response(status=status.HTTP_200_OK)
+
+
+class ActivateProfile(generics.CreateAPIView):
+    def post(self, request, *args, **kwargs):
+        user_id = request.data.pop('user_id')
+        user = get_object_or_404(User, pk=user_id)
+        user.active_profile_id = request.data['profile_id']
+        user.save();
+        return Response(status=status.HTTP_200_OK)
+
+
+class ActivateLocation(generics.CreateAPIView):
+    def post(self, request, *args, **kwargs):
+        user_id = request.data.pop('user_id')
+        user = get_object_or_404(User, pk=user_id)
+        user.active_location_id = request.data['location_id']
+        user.save();
+        return Response(status=status.HTTP_200_OK)
