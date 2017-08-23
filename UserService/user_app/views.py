@@ -169,6 +169,15 @@ class ApplicationIdCreation(generics.CreateAPIView):
     serializer_class = ApplicationIdSerializer
 
 
+class DeleteApplication(generics.CreateAPIView):
+    def post(self, request, *args, **kwargs):
+        application_id = request.data.pop('application_id')
+        application_rel = ApplicationId.objects.get(pk=application_id)
+        if application_rel:
+            application_rel.delete()
+        return Response(status=status.HTTP_200_OK)
+        
+
 class LocationIdCreation(generics.CreateAPIView):
     queryset = LocationId.objects.all()
     serializer_class = LocationIdSerializer
@@ -210,6 +219,15 @@ class DeleteLocation(generics.CreateAPIView):
 class JobPostIdCreation(generics.CreateAPIView):
     queryset = JobPostId.objects.all()
     serializer_class = JobPostIdSerializer
+
+
+class DeleteJobPost(generics.CreateAPIView):
+    def post(self, request, *args, **kwargs):
+        job_post_id = request.data.pop('job_post_id')
+        job_post_rel = JobPostId.objects.get(pk=job_post_id)
+        if job_post_rel:
+            job_post_rel.delete()
+        return Response(status=status.HTTP_200_OK)
 
 
 class ProviderProfileIdCreation(generics.CreateAPIView):

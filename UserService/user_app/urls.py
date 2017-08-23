@@ -21,6 +21,11 @@ urlpatterns = [
     # url(r'^user/activateProfile$', views.UserCreation.as_view()),
     # url(r'^user/activateLocation', views.UserCreation.as_view()),
     # url(r'^user/addLocation', views.UserCreation.as_view()),
+    url(r'^user/rel/addJobPost$', views.JobPostIdCreation.as_view()),
+    url(r'^user/rel/deleteJobPost', views.DeleteJobPost.as_view()),
+    
+    url(r'^user/rel/addApplication$', views.ApplicationIdCreation.as_view()),
+    url(r'^user/rel/deleteApplication', views.DeleteApplication.as_view()),
 
     url(r'^user/rel/addLocation$', views.LocationIdCreation.as_view()),
     url(r'^user/rel/deleteLocation', views.DeleteLocation.as_view()),
