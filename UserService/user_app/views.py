@@ -167,6 +167,22 @@ class DeleteProfile(generics.CreateAPIView):
 class ApplicationIdCreation(generics.CreateAPIView):
     queryset = ApplicationId.objects.all()
     serializer_class = ApplicationIdSerializer
+    
+    def post(self, request, *args, **kwargs):
+        user_id = request.data.pop('user_id')
+        user = get_object_or_404(User, pk=user_id)
+
+        data = {
+            'application_id': request.data['application_id'],
+            'user': user,
+            'created': datetime.utcnow()
+        }
+        z = ApplicationIdSerializer(data=data)
+        if z.is_valid():
+            z.save()
+        else:
+            return Response(z.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(z.data['application_id'], status=status.HTTP_201_CREATED)
 
 
 class DeleteApplication(generics.CreateAPIView):
@@ -219,6 +235,22 @@ class DeleteLocation(generics.CreateAPIView):
 class JobPostIdCreation(generics.CreateAPIView):
     queryset = JobPostId.objects.all()
     serializer_class = JobPostIdSerializer
+    
+    def post(self, request, *args, **kwargs):
+        user_id = request.data.pop('user_id')
+        user = get_object_or_404(User, pk=user_id)
+
+        data = {
+            'job_post_id': request.data['job_post_id'],
+            'user': user,
+            'created': datetime.utcnow()
+        }
+        z = JobPostIdSerializer(data=data)
+        if z.is_valid():
+            z.save()
+        else:
+            return Response(z.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(z.data['job_post_id'], status=status.HTTP_201_CREATED)
 
 
 class DeleteJobPost(generics.CreateAPIView):
@@ -236,8 +268,6 @@ class ProviderProfileIdCreation(generics.CreateAPIView):
 
     def post(self, request, *args, **kwargs):
         user_id = request.data.pop('user_id')
-        # queryset = User.objects.all()
-        # filter = {'user_id': user_id}
         user = get_object_or_404(User, pk=user_id)
 
         data = {
@@ -266,7 +296,7 @@ class DeleteProviderProfile(generics.CreateAPIView):
             user.active_profile_id = None;
             user.save();
         return Response(status=status.HTTP_200_OK)
-
+        
 
 class ActivateProfile(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
@@ -283,4 +313,32 @@ class ActivateLocation(generics.CreateAPIView):
         user = get_object_or_404(User, pk=user_id)
         user.active_location_id = request.data['location_id']
         user.save();
+        return Response(status=status.HTTP_200_OK)
+
+
+class Utils():
+
+    @staticmethod
+    def createRel(clazz, request, idAttributeName, slz):
+        user_id = request.data.pop('user_id')
+        user = get_object_or_404(User, pk=user_id)
+
+        data = {
+            idAttributeName: request.data[idAttributeName],
+            'user': user,
+            'created': datetime.utcnow()
+        }
+        z = slz(data=data)
+        if z.is_valid():
+            z.save()
+        else:
+            return Response(z.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(z.data[idAttributeName], status=status.HTTP_201_CREATED)
+    
+    @staticmethod
+    def deleteRel(clazz, request, idAttributeName):
+        id = request.data.pop(idAttributeName)
+        rel = clazz.objects.get(pk=id)
+        if rel:
+            rel.delete()
         return Response(status=status.HTTP_200_OK)
