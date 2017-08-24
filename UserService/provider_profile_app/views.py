@@ -33,6 +33,9 @@ class ProviderProfileList(generics.ListCreateAPIView):
         profile_dict = request.data
         if 'profile_id' not in profile_dict:
             profile_dict['created'] = datetime.utcnow()
+            okStatus = status.HTTP_201_CREATED
+        else:
+            okStatus = status.HTTP_200_OK
         profile = ProviderProfile(**profile_dict)
         profile.save()
 
@@ -48,7 +51,7 @@ class ProviderProfileList(generics.ListCreateAPIView):
             }
             mapping, created = BenefitId.objects.get_or_create(**benefit_mapping);
 
-        return Response(ProviderProfileSerializer(profile).data, status=status.HTTP_201_CREATED)
+        return Response(ProviderProfileSerializer(profile).data, status=okStatus)
 
 
 class ProviderProfileDetail(generics.RetrieveUpdateDestroyAPIView):

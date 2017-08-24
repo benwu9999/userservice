@@ -39,6 +39,9 @@ class ProfileList(generics.ListCreateAPIView):
         profile_dict = request.data
         if 'profile_id' not in profile_dict:
             profile_dict['created'] = now
+            okStatus = status.HTTP_201_CREATED
+        else:
+            okStatus = status.HTTP_200_OK
         profile = Profile(**profile_dict)
         profile.save()
 
@@ -55,8 +58,8 @@ class ProfileList(generics.ListCreateAPIView):
             }
             mapping, created = SkillId.objects.get_or_create(**skill_mapping);
 
-        s = ProfileSerializer(profile)
-        return Response(s.data, status=status.HTTP_201_CREATED)
+        z = ProfileSerializer(profile)
+        return Response(z.data, status=okStatus)
 
 
 class ProfileDetail(generics.RetrieveUpdateDestroyAPIView):

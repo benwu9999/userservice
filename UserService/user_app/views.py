@@ -28,7 +28,11 @@ class UserCreation(generics.ListCreateAPIView):
 
         role_names = request.data.pop('roles')
         now = datetime.utcnow()
-        request.data['created'] = now
+        if 'user_id' not in request.data:
+            request.data['created'] = now
+            okStatus = status.HTTP_201_CREATED
+        else:
+            okStatus = status.HTTP_200_OK
         request.data['modified'] = now
         user = User(**request.data)
         user.set_password(request.data['password'])
@@ -46,7 +50,7 @@ class UserCreation(generics.ListCreateAPIView):
                 z.save()
             else:
                 return Response(z.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
+        return Response(UserSerializer(user).data, status=okStatus)
         # else:
         #     return Response(user.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -271,7 +275,7 @@ class ProviderProfileIdCreation(generics.CreateAPIView):
         user = get_object_or_404(User, pk=user_id)
 
         data = {
-            'provider_profile_id': request.data['profile_id'],
+            'provider_profile_id': request.data['provider_profile_id'],
             'user': user,
             'created': datetime.utcnow()
         }
