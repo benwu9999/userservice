@@ -41,11 +41,11 @@ class UserCreation(generics.ListCreateAPIView):
                 'user': user.pk,
                 'created': now
             }
-            role = RoleSerializer(data=role_data)
-            if role.is_valid():
-                role.save()
+            z = RoleSerializer(data=role_data)
+            if z.is_valid():
+                z.save()
             else:
-                return Response(role.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response(z.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
         # else:
         #     return Response(user.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -141,12 +141,12 @@ class ProfileIdCreation(generics.CreateAPIView):
             'user': user,
             'created': datetime.utcnow()
         }
-        profile_id_slz = ProfileIdSerializer(data=data)
-        if profile_id_slz.is_valid():
-            profile_id_slz.save()
+        z = ProfileIdSerializer(data=data)
+        if z.is_valid():
+            z.save()
         else:
-            return Response(profile_id_slz.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response(profile_id_slz.data, status=status.HTTP_201_CREATED)
+            return Response(z.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(z.data['profile_id'], status=status.HTTP_201_CREATED)
 
 
 class DeleteProfile(generics.CreateAPIView):
@@ -176,7 +176,7 @@ class DeleteApplication(generics.CreateAPIView):
         if application_rel:
             application_rel.delete()
         return Response(status=status.HTTP_200_OK)
-        
+
 
 class LocationIdCreation(generics.CreateAPIView):
     queryset = LocationId.objects.all()
@@ -193,12 +193,12 @@ class LocationIdCreation(generics.CreateAPIView):
             'user': user,
             'created': datetime.utcnow()
         }
-        location = LocationIdSerializer(data=data)
-        if location.is_valid():
-            location.save()
+        z = LocationIdSerializer(data=data)
+        if z.is_valid():
+            z.save()
         else:
-            return Response(location.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response(location.data, status=status.HTTP_201_CREATED)
+            return Response(z.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(z.data['location_id'], status=status.HTTP_201_CREATED)
 
 
 class DeleteLocation(generics.CreateAPIView):
@@ -245,12 +245,12 @@ class ProviderProfileIdCreation(generics.CreateAPIView):
             'user': user,
             'created': datetime.utcnow()
         }
-        provider_profile = ProviderProfileIdSerializer(data=data)
-        if provider_profile.is_valid():
-            provider_profile.save()
+        z = ProviderProfileIdSerializer(data=data)
+        if z.is_valid():
+            z.save()
         else:
-            return Response(provider_profile.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response(provider_profile.data, status=status.HTTP_201_CREATED)
+            return Response(z.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(z.data['provider_profile_id'], status=status.HTTP_201_CREATED)
 
 
 class DeleteProviderProfile(generics.CreateAPIView):

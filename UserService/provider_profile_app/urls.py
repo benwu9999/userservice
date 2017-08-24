@@ -20,7 +20,7 @@ from . import views
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
 
-    url(r'^providerProfile/$', views.ProviderProfileList.as_view()),
+    url(r'^providerProfile$', views.ProviderProfileList.as_view()),
     url(r'^providerProfile/search?', views.ProviderProfileSearch.as_view()),
     # supports /profile/{profileId}
     url(r'^providerProfile/(?P<profileId>.+)$', views.ProviderProfileDetail.as_view()),

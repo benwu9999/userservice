@@ -27,8 +27,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -53,7 +51,6 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',  # add CORS support
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -78,9 +75,9 @@ CORS_ALLOW_CREDENTIALS = True
 
 CORS_ORIGIN_ALLOW_ALL = True
 
-#CORS_ORIGIN_WHITELIST = (
+# CORS_ORIGIN_WHITELIST = (
 #    'http://localhost:4200'
-#)
+# )
 
 ROOT_URLCONF = 'admin_site.urls'
 
@@ -155,12 +152,9 @@ AUTH_PASSWORD_VALIDATORS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticated',
+        # 'rest_framework.permissions.AllowAny',
     ),
-    #     comment out for now to allow easier testing
-    #     'DEFAULT_PERMISSION_CLASSES': (
-    #         'rest_framework.permissions.IsAuthenticated',
-    #     ),
     # convert json from snake to camel case
     'DEFAULT_RENDERER_CLASSES': (
         'djangorestframework_camel_case.render.CamelCaseJSONRenderer',
@@ -168,6 +162,9 @@ REST_FRAMEWORK = {
     # convert json from camel to snake case
     'DEFAULT_PARSER_CLASSES': (
         'djangorestframework_camel_case.parser.CamelCaseJSONParser',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
     ),
 }
 
@@ -193,14 +190,14 @@ STATIC_URL = '/static/'
 
 
 JWT_AUTH = {
-    'JWT_PAYLOAD_GET_USER_ID_HANDLER':
-        'jwt_get_user_id_from_payload'
+    # 'JWT_PAYLOAD_GET_USER_ID_HANDLER': 'jwt_get_user_id_from_payload',
+    'JWT_AUTH_HEADER_PREFIX': 'Bearer'
 }
 
 
-def jwt_get_user_id_from_payload(payload):
-    """
-    Override this function if user_id is formatted differently in payload
-    """
-
-    return payload.get('userId')
+# def jwt_get_user_id_from_payload(payload):
+#     """
+#     Override this function if user_id is formatted differently in payload
+#     """
+#
+#     return payload.get('userId')
