@@ -66,7 +66,6 @@ class ProfileDetail(generics.RetrieveUpdateDestroyAPIView):
 
     # override the default lookup field "PK" with
     # the lookup field for this model
-    lookup_field = 'profile_id'
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
 

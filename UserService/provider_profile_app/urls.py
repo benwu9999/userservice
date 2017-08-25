@@ -23,5 +23,5 @@ urlpatterns = [
     url(r'^providerProfile$', views.ProviderProfileList.as_view()),
     url(r'^providerProfile/search?', views.ProviderProfileSearch.as_view()),
     # supports /profile/{profileId}
-    url(r'^providerProfile/(?P<profileId>.+)$', views.ProviderProfileDetail.as_view()),
+    url(r'^providerProfile/(?P<pk>.+)$', views.ProviderProfileDetail.as_view()),
 ]

@@ -56,7 +56,6 @@ class ProviderProfileList(generics.ListCreateAPIView):
 
 class ProviderProfileDetail(generics.RetrieveUpdateDestroyAPIView):
     # override the default lookup field "PK" with the lookup field for this model
-    lookup_field = 'profile_id'
     queryset = ProviderProfile.objects.all()
     serializer_class = ProviderProfileSerializer
 
