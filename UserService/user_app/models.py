@@ -85,7 +85,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     active_location_id = models.CharField(max_length=200, null=True, blank=True)
     active = models.BooleanField(_('active'), default=True)
 
-    created = UnixDateTimeField()
+    created = UnixDateTimeField(null=True, blank=True)
     modified = UnixDateTimeField(auto_now=True)
 
     objects = UserManager()

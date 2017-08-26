@@ -13,7 +13,7 @@ class ProviderProfile(models.Model):
     email = models.EmailField(_('email'), null=True, blank=True)
     other_contact = models.CharField(_('other_contact'), max_length=100, null=True, blank=True)
 
-    created = UnixDateTimeField()
+    created = UnixDateTimeField(null=True, blank=True)
     modified = UnixDateTimeField(auto_now=True)
 
     class Meta:

@@ -16,7 +16,7 @@ class Compensation(models.Model):
     compensation_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     amount = models.IntegerField(default=0, null=True)
     duration = models.CharField(max_length=200, null=True)
-    created = UnixDateTimeField()
+    created = UnixDateTimeField(null=True, blank=True)
 
 class Profile(models.Model):
     class Meta:
@@ -34,7 +34,7 @@ class Profile(models.Model):
         db_column='compensation_id',
         null=True
     )
-    created = UnixDateTimeField()
+    created = UnixDateTimeField(null=True, blank=True)
     modified = UnixDateTimeField(auto_now=True)
 
 
