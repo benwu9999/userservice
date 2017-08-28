@@ -1,0 +1,3 @@
+class Utils:
+    def get_epoch(self, epoch):
+        return int(time.time()) - epoch

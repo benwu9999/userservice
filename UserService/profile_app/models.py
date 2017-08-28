@@ -25,8 +25,10 @@ class Profile(models.Model):
         db_table = 'profile'
 
     profile_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    title = models.CharField(_('profile name'), max_length=200)
+    name = models.CharField(_('profile name'), max_length=200)
     description = models.CharField(_('description'), max_length=200, null=True, blank=True)
+    email = models.EmailField(_('email'), null=True, blank=True)
+    other_contact = models.CharField(_('other_contact'), max_length=100, null=True, blank=True)
     phone = models.CharField(_('phone'), max_length=10, null=True, blank=True)
     compensation = models.ForeignKey(
         Compensation,

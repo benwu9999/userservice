@@ -1,6 +1,7 @@
 # Create your views here.
 import logging
 from datetime import datetime
+import time
 
 import sys
 from django.http import HttpResponse
@@ -9,6 +10,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from models import ProviderProfile, BenefitId, Benefit
+from django.db.models import Q
 from serializers import ProviderProfileSerializer
 
 
@@ -79,13 +81,20 @@ class ProviderProfileById(APIView):
 class ProviderProfileSearch(APIView):
     def get(self, request, format=None):
         try:
+            args = Q()
+            kwargs = {}
             if 'ids' in request.query_params:
-                # data['locations'] = LocationSerializer(Location.objects.filter(
-                #     pk__in=request.query_params['ids'].split(',')), many=True)
-
-                serializer = ProviderProfileSerializer(ProviderProfile.objects.filter(
-                    pk__in=request.query_params['ids'].split(',')), many=True)
-
-                return Response(serializer.data)
+                kwargs['pk__in'] = request.query_params['ids'].split(',')
+            if 'within' in request.query_params:
+                kwargs['created__gt'] = get_epoch(request.query_params['within'])
+            if 'has' in request.query_params:
+                args = args | Q(**{'company_name__icontains':request.query_params['has']})
+                args = args | Q(**{'description__icontains': request.query_params['has']})
+                args = args | Q(**{'email__icontains': request.query_params['has']})
+                args = args | Q(**{'phone__icontains': request.query_params['has']})
+                args = args | Q(**{'other_contact__icontains': request.query_params['has']})
+            z = ProviderProfileSerializer(ProviderProfile.objects.filter(*args, **kwargs), many=True)
+            return Response(z.data)
         except:
             return Response(sys.exc_info()[0])
+            
