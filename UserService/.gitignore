@@ -1,2 +1,5 @@
 *.pyc
 lib/*
+user_app/migrations/*
+profile_app/migrations/*
+provider_profile_app/migrations/*
