@@ -3,6 +3,8 @@ import logging
 from datetime import datetime
 
 import sys
+
+import operator
 from django.http import HttpResponse
 from rest_framework import generics, status
 from rest_framework.response import Response
@@ -10,6 +12,9 @@ from rest_framework.views import APIView
 
 from models import Profile, Compensation, Skill, SkillId
 from serializers import ProfileSerializer
+from django.db.models import Q
+
+from shared.utils import Utils
 
 
 def index(request):
@@ -63,7 +68,6 @@ class ProfileList(generics.ListCreateAPIView):
 
 
 class ProfileDetail(generics.RetrieveUpdateDestroyAPIView):
-
     # override the default lookup field "PK" with
     # the lookup field for this model
     queryset = Profile.objects.all()
@@ -73,19 +77,20 @@ class ProfileDetail(generics.RetrieveUpdateDestroyAPIView):
 class ProfileSearch(APIView):
     def get(self, request, format=None):
         try:
-            args = Q()
-            kwargs = {}
+            qs = list()
             if 'ids' in request.query_params:
-                kwargs['pk__in'] = request.query_params['ids'].split(',')
+                qs.append(Q(pk__in=request.query_params['ids'].split(',')))
             if 'within' in request.query_params:
-                kwargs['created__gt'] = get_epoch(request.query_params['within'])
+                qs.append(Q(created__gt=Utils.get_epoch(request.query_params['within'])))
             if 'has' in request.query_params:
-                args = args | Q(**{'name__icontains':request.query_params['has']})
-                args = args | Q(**{'description__icontains': request.query_params['has']})
-                args = args | Q(**{'email__icontains': request.query_params['has']})
-                args = args | Q(**{'phone__icontains': request.query_params['has']})
-                args = args | Q(**{'other_contact__icontains': request.query_params['has']})
-            z = ProfileSerializer(Profile.objects.filter(*args, **kwargs), many=True)
+                text_qs = list()
+                text_qs.append(Q(**{'name__icontains': request.query_params['has']}))
+                text_qs.append(Q(**{'description__icontains': request.query_params['has']}))
+                text_qs.append(Q(**{'email__icontains': request.query_params['has']}))
+                text_qs.append(Q(**{'phone__icontains': request.query_params['has']}))
+                text_qs.append(Q(**{'other_contact__icontains': request.query_params['has']}))
+                qs.append(reduce(operator.or_, text_qs))
+            z = ProfileSerializer(Profile.objects.filter(reduce(operator.and_, qs)), many=True)
             return Response(z.data)
         except:
             return Response(sys.exc_info()[0])
