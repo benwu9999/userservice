@@ -17,6 +17,12 @@ class ProviderProfileServiceClient:
             return [];
         parsed = json.loads(urllib2.urlopen(self.url + 'search?ids=' + ",".join(ids)))
         return parsed
+        
+    def search_by_name(self, names):
+        if not names:
+            return {};
+        parsed = json.loads(urllib2.urlopen(self.url + 'search?has=' + ",".join(names)))
+        return parsed
 
 if __name__ == '__main__':
     client = ProviderProfileServiceClient();
