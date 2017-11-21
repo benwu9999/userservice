@@ -21,15 +21,15 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = '__all__'
 
-    # overwriting create method to call user.set_password, this call is needed to hash the password
-    # which is by default the way django authenticate a login, django will try to unhash the hashed
-    # password in database to authenticate user login
-    # def create(self, validated_data):
-    #     user = User.objects.create(user_id=validated_data['user_id'])
-    #     user.set_password(validated_data['password'])
-    #     user.is_active = True
-    #     user.save()
-    #     return user
+        # overwriting create method to call user.set_password, this call is needed to hash the password
+        # which is by default the way django authenticate a login, django will try to unhash the hashed
+        # password in database to authenticate user login
+        # def create(self, validated_data):
+        #     user = User.objects.create(user_id=validated_data['user_id'])
+        #     user.set_password(validated_data['password'])
+        #     user.is_active = True
+        #     user.save()
+        #     return user
 
         # user = super(UserSerializer, self).create(validated_data)
         # user.set_password(validated_data['password'])
@@ -141,6 +141,16 @@ class ApplicationIdSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         ret = super(ApplicationIdSerializer, self).to_representation(instance)
         ret['application_id'] = ret['application_id'].replace('-', '')
+        return ret
+
+class JobPostAlertIdSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = JobPostAlertId
+        fields = '__all__'
+
+    def to_representation(self, instance):
+        ret = super(JobPostAlertIdSerializer, self).to_representation(instance)
+        ret['alert_id'] = ret['alert_id'].replace('-', '')
         return ret
 
 

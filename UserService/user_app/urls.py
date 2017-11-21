@@ -23,7 +23,7 @@ urlpatterns = [
     # url(r'^user/addLocation', views.UserCreation.as_view()),
     url(r'^user/rel/addJobPost$', views.JobPostIdCreation.as_view()),
     url(r'^user/rel/deleteJobPost', views.DeleteJobPost.as_view()),
-    
+
     url(r'^user/rel/addApplication$', views.ApplicationIdCreation.as_view()),
     url(r'^user/rel/deleteApplication', views.DeleteApplication.as_view()),
 
@@ -39,6 +39,9 @@ urlpatterns = [
     url(r'^user/rel/deleteProviderProfile', views.DeleteProviderProfile.as_view()),
 
     url(r'^user/rel/addApplication$', views.ApplicationIdCreation.as_view()),
+
+    url(r'^user/rel/addAlert$', views.JobPostAlertIdCreation.as_view()),
+    url(r'^user/rel/deleteAlert', views.DeleteJobPostAlert.as_view()),
 
     url(r'^user$', views.UserCreation.as_view()),
     # url(r'^user$', views.UserList.as_view()),

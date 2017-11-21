@@ -3,6 +3,8 @@ from django.utils.translation import ugettext_lazy as _
 import uuid
 
 from django_unixdatetimefield import UnixDateTimeField
+import datetime
+import dateutil.parser
 
 
 class ProviderProfile(models.Model):
@@ -13,13 +15,20 @@ class ProviderProfile(models.Model):
     email = models.EmailField(_('email'), null=True, blank=True)
     other_contact = models.CharField(_('other_contact'), max_length=100, null=True, blank=True)
 
-    created = UnixDateTimeField(null=True, blank=True)
+    created = UnixDateTimeField()
     modified = UnixDateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = _('provider profile')
         verbose_name_plural = _('provider profiles')
         db_table = 'provider_profile'
+
+    def save(self, *args, **kwargs):
+        if not self.created:
+            self.created = datetime.datetime.now()
+        else:
+            self.created = dateutil.parser.parse(self.created)
+        super(ProviderProfile, self).save()
 
 
 class Benefit(models.Model):
@@ -28,7 +37,14 @@ class Benefit(models.Model):
 
     benefit_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     benefit = models.CharField(max_length=200)
-    created = UnixDateTimeField(auto_now=True)
+    created = UnixDateTimeField()
+
+    def save(self, *args, **kwargs):
+        if not self.created:
+            self.created = datetime.datetime.now()
+        else:
+            self.created = dateutil.parser.parse(self.created)
+        super(Benefit, self).save()
 
 
 class BenefitId(models.Model):
@@ -45,4 +61,11 @@ class BenefitId(models.Model):
         on_delete=models.CASCADE,
         db_column='benefit_id'
     )
-    created = UnixDateTimeField(auto_now=True)
+    created = UnixDateTimeField()
+
+    def save(self, *args, **kwargs):
+        if not self.created:
+            self.created = datetime.datetime.now()
+        else:
+            self.created = dateutil.parser.parse(self.created)
+        super(BenefitId, self).save()

@@ -42,8 +42,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     """
     Serializer to conver Profile object data to primitive Python Data types
     """
-
-    # compensation = CompensationSerializer(many=False)
+    compensation = CompensationSerializer(many=False)
 
     class Meta:
         model = Profile

@@ -1,19 +1,18 @@
 # Create your views here.
 import logging
-from datetime import datetime
-
+import operator
 import sys
 
-import operator
+from django.db.models import Q
 from django.http import HttpResponse
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from models import ProviderProfile, BenefitId, Benefit
-from django.db.models import Q
 from serializers import ProviderProfileSerializer
 from shared.utils import Utils
+
 
 def index(request):
     return HttpResponse("Profile API")
@@ -35,7 +34,6 @@ class ProviderProfileList(generics.ListCreateAPIView):
 
         profile_dict = request.data
         if 'profile_id' not in profile_dict:
-            profile_dict['created'] = datetime.utcnow()
             okStatus = status.HTTP_201_CREATED
         else:
             okStatus = status.HTTP_200_OK
@@ -58,7 +56,6 @@ class ProviderProfileList(generics.ListCreateAPIView):
 
 
 class ProviderProfileDetail(generics.RetrieveUpdateDestroyAPIView):
-    # override the default lookup field "PK" with the lookup field for this model
     queryset = ProviderProfile.objects.all()
     serializer_class = ProviderProfileSerializer
 
@@ -99,3 +96,15 @@ class ProviderProfileSearch(APIView):
             return Response(z.data)
         except:
             return Response(sys.exc_info()[0])
+
+
+class ProviderProfileSearchByIds(APIView):
+    authentication_classes = ()
+    permission_classes = ()
+
+    def get(self, request, format=None):
+        if 'ids' in request.query_params:
+            q = Q(pk__in=request.query_params['ids'].split(','))
+            z = ProviderProfileSerializer(ProviderProfile.objects.filter(q), many=True)
+            return Response(z.data)
+        return Response([])

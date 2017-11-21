@@ -8,6 +8,8 @@ from django_unixdatetimefield import UnixDateTimeField
 
 from .managers import UserManager
 from django.conf import settings
+import datetime
+import dateutil.parser
 
 
 # fields in model will use camel case so django can parse json which is also camel case
@@ -17,10 +19,17 @@ class AbstractMapping(models.Model):
         on_delete=models.CASCADE,
         db_column='user_id'
     )
-    created = UnixDateTimeField(auto_now=True)
+    created = UnixDateTimeField()
 
     class Meta:
         abstract = True
+
+    def save(self, *args, **kwargs):
+        if not self.created:
+            self.created = datetime.datetime.now()
+        else:
+            self.created = dateutil.parser.parse(self.created)
+        super(AbstractMapping, self).save()
 
 
 class ProfileId(AbstractMapping):
@@ -42,6 +51,13 @@ class ApplicationId(AbstractMapping):
 
     class Meta:
         db_table = 'user_application_id'
+
+
+class JobPostAlertId(AbstractMapping):
+    alert_id = models.CharField(primary_key=True, max_length=200)
+
+    class Meta:
+        db_table = 'user_job_post_alert_id'
 
 
 class LocationId(AbstractMapping):
@@ -85,10 +101,17 @@ class User(AbstractBaseUser, PermissionsMixin):
     active_location_id = models.CharField(max_length=200, null=True, blank=True)
     active = models.BooleanField(_('active'), default=True)
 
-    created = UnixDateTimeField(null=True, blank=True)
+    created = UnixDateTimeField()
     modified = UnixDateTimeField(auto_now=True)
 
     objects = UserManager()
 
     USERNAME_FIELD = 'user_id'
     REQUIRED_FIELDS = ['email']
+
+    def save(self, *args, **kwargs):
+        if not self.created:
+            self.created = datetime.datetime.now()
+        elif type(self.created) is str:
+            self.created = dateutil.parser.parse(self.created)
+        super(User, self).save()

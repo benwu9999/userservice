@@ -21,7 +21,12 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
 
     url(r'^providerProfile$', views.ProviderProfileList.as_view()),
-    url(r'^providerProfile/search?', views.ProviderProfileSearch.as_view()),
+
+    # unprotected views
+    url(r'^providerProfile/ids', views.ProviderProfileSearchByIds.as_view()),
+
+    url(r'^providerProfile/search', views.ProviderProfileSearch.as_view()),
     # supports /profile/{profileId}
     url(r'^providerProfile/(?P<pk>.+)$', views.ProviderProfileDetail.as_view()),
+
 ]

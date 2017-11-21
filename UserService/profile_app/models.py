@@ -3,6 +3,9 @@ from django.utils.translation import ugettext_lazy as _
 import uuid
 
 from django_unixdatetimefield import UnixDateTimeField
+import datetime
+import dateutil.parser
+
 
 class Compensation(models.Model):
     """
@@ -16,7 +19,15 @@ class Compensation(models.Model):
     compensation_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     amount = models.IntegerField(default=0, null=True)
     duration = models.CharField(max_length=200, null=True)
-    created = UnixDateTimeField(null=True, blank=True)
+    created = UnixDateTimeField()
+
+    def save(self, *args, **kwargs):
+        if not self.created:
+            self.created = datetime.datetime.now()
+        else:
+            self.created = dateutil.parser.parse(self.created)
+        super(Compensation, self).save()
+
 
 class Profile(models.Model):
     class Meta:
@@ -36,8 +47,15 @@ class Profile(models.Model):
         db_column='compensation_id',
         null=True
     )
-    created = UnixDateTimeField(null=True, blank=True)
+    created = UnixDateTimeField()
     modified = UnixDateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if not self.created:
+            self.created = datetime.datetime.now()
+        else:
+            self.created = dateutil.parser.parse(self.created)
+        super(Profile, self).save()
 
 
 class Skill(models.Model):
@@ -46,7 +64,14 @@ class Skill(models.Model):
 
     skill_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     skill = models.CharField(max_length=200)
-    created = UnixDateTimeField(auto_now=True)
+    created = UnixDateTimeField()
+
+    def save(self, *args, **kwargs):
+        if not self.created:
+            self.created = datetime.datetime.now()
+        else:
+            self.created = dateutil.parser.parse(self.created)
+        super(Skill, self).save()
 
 
 class SkillId(models.Model):
@@ -63,6 +88,11 @@ class SkillId(models.Model):
         on_delete=models.CASCADE,
         db_column='skill_id'
     )
-    created = UnixDateTimeField(auto_now=True)
+    created = UnixDateTimeField()
 
-
+    def save(self, *args, **kwargs):
+        if not self.created:
+            self.created = datetime.datetime.now()
+        else:
+            self.created = dateutil.parser.parse(self.created)
+        super(SkillId, self).save()

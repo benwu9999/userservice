@@ -38,15 +38,15 @@ class ProfileList(generics.ListCreateAPIView):
         now = datetime.utcnow()
 
         compensation = request.data.pop('compensation')
-        compensation['created'] = now
         comp, created = Compensation.objects.get_or_create(**compensation)
 
         profile_dict = request.data
+        profile_dict['compensation'] = comp
         if 'profile_id' not in profile_dict:
-            profile_dict['created'] = now
             okStatus = status.HTTP_201_CREATED
         else:
             okStatus = status.HTTP_200_OK
+
         profile = Profile(**profile_dict)
         profile.save()
 

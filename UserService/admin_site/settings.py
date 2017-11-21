@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
 import os
+
+import datetime
 from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -191,9 +193,11 @@ STATIC_URL = '/static/'
 
 JWT_AUTH = {
     # 'JWT_PAYLOAD_GET_USER_ID_HANDLER': 'jwt_get_user_id_from_payload',
-    'JWT_AUTH_HEADER_PREFIX': 'Bearer'
+    'JWT_AUTH_HEADER_PREFIX': 'Bearer',
+    'JWT_ALLOW_REFRESH': True,
+    # 'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=10),
+    'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
 }
-
 
 # def jwt_get_user_id_from_payload(payload):
 #     """

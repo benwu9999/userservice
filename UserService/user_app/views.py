@@ -21,19 +21,18 @@ def index(request):
 class UserCreation(generics.ListCreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    authentication_classes = []
+    permission_classes = ()
 
     def post(self, request, *args, **kwargs):
         request.data.pop('locations')
         request.data.pop('profiles')
 
         role_names = request.data.pop('roles')
-        now = datetime.utcnow()
         if 'user_id' not in request.data:
-            request.data['created'] = now
             okStatus = status.HTTP_201_CREATED
         else:
             okStatus = status.HTTP_200_OK
-        request.data['modified'] = now
         user = User(**request.data)
         user.set_password(request.data['password'])
         user.is_active = True
@@ -43,7 +42,6 @@ class UserCreation(generics.ListCreateAPIView):
             role_data = {
                 'role': role_name,
                 'user': user.pk,
-                'created': now
             }
             z = RoleSerializer(data=role_data)
             if z.is_valid():
@@ -110,6 +108,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 d['applicationIds'] = user.application_id_set.all()
                 d['locationIds'] = user.location_id_set.all()
                 d['profileIds'] = user.profile_id_set.all()
+                d['alertIds'] = user.job_post_id_set.all()
             elif user.role == 'PROVIDER':
                 d['jobPostIds'] = user.job_post_id_set.all()
                 d['providerProfileIds'] = user.provider_profile_id_set.all()
@@ -143,7 +142,6 @@ class ProfileIdCreation(generics.CreateAPIView):
         data = {
             'profile_id': request.data['profile_id'],
             'user': user,
-            'created': datetime.utcnow()
         }
         z = ProfileIdSerializer(data=data)
         if z.is_valid():
@@ -171,7 +169,7 @@ class DeleteProfile(generics.CreateAPIView):
 class ApplicationIdCreation(generics.CreateAPIView):
     queryset = ApplicationId.objects.all()
     serializer_class = ApplicationIdSerializer
-    
+
     def post(self, request, *args, **kwargs):
         user_id = request.data.pop('user_id')
         user = get_object_or_404(User, pk=user_id)
@@ -179,7 +177,6 @@ class ApplicationIdCreation(generics.CreateAPIView):
         data = {
             'application_id': request.data['application_id'],
             'user': user,
-            'created': datetime.utcnow()
         }
         z = ApplicationIdSerializer(data=data)
         if z.is_valid():
@@ -187,6 +184,35 @@ class ApplicationIdCreation(generics.CreateAPIView):
         else:
             return Response(z.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(z.data['application_id'], status=status.HTTP_201_CREATED)
+
+
+class JobPostAlertIdCreation(generics.CreateAPIView):
+    queryset = JobPostAlertId.objects.all()
+    serializer_class = JobPostAlertIdSerializer
+
+    def post(self, request, *args, **kwargs):
+        user_id = request.data.pop('user_id')
+        user = get_object_or_404(User, pk=user_id)
+
+        data = {
+            'alert_id': request.data['alert_id'],
+            'user': user,
+        }
+        z = JobPostAlertIdSerializer(data=data)
+        if z.is_valid():
+            z.save()
+        else:
+            return Response(z.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(z.data['alert_id'], status=status.HTTP_201_CREATED)
+
+
+class DeleteJobPostAlert(generics.CreateAPIView):
+    def post(self, request, *args, **kwargs):
+        alert_id = request.data.pop('alert_id')
+        job_post_alert_id = JobPostAlertId.objects.get(pk=alert_id)
+        if job_post_alert_id:
+            job_post_alert_id.delete()
+        return Response(status=status.HTTP_200_OK)
 
 
 class DeleteApplication(generics.CreateAPIView):
@@ -211,14 +237,10 @@ class LocationIdCreation(generics.CreateAPIView):
         data = {
             'location_id': request.data['location_id'],
             'user': user,
-            'created': datetime.utcnow()
         }
-        z = LocationIdSerializer(data=data)
-        if z.is_valid():
-            z.save()
-        else:
-            return Response(z.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response(z.data['location_id'], status=status.HTTP_201_CREATED)
+        location_id = LocationId(**data)
+        location_id.save()
+        return Response(LocationIdSerializer(location_id).data, status=status.HTTP_201_CREATED)
 
 
 class DeleteLocation(generics.CreateAPIView):
@@ -239,7 +261,7 @@ class DeleteLocation(generics.CreateAPIView):
 class JobPostIdCreation(generics.CreateAPIView):
     queryset = JobPostId.objects.all()
     serializer_class = JobPostIdSerializer
-    
+
     def post(self, request, *args, **kwargs):
         user_id = request.data.pop('user_id')
         user = get_object_or_404(User, pk=user_id)
@@ -247,7 +269,6 @@ class JobPostIdCreation(generics.CreateAPIView):
         data = {
             'job_post_id': request.data['job_post_id'],
             'user': user,
-            'created': datetime.utcnow()
         }
         z = JobPostIdSerializer(data=data)
         if z.is_valid():
@@ -277,7 +298,6 @@ class ProviderProfileIdCreation(generics.CreateAPIView):
         data = {
             'provider_profile_id': request.data['provider_profile_id'],
             'user': user,
-            'created': datetime.utcnow()
         }
         z = ProviderProfileIdSerializer(data=data)
         if z.is_valid():
@@ -300,7 +320,7 @@ class DeleteProviderProfile(generics.CreateAPIView):
             user.active_profile_id = None;
             user.save();
         return Response(status=status.HTTP_200_OK)
-        
+
 
 class ActivateProfile(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
@@ -321,7 +341,6 @@ class ActivateLocation(generics.CreateAPIView):
 
 
 class Utils():
-
     @staticmethod
     def createRel(clazz, request, idAttributeName, slz):
         user_id = request.data.pop('user_id')
@@ -330,7 +349,6 @@ class Utils():
         data = {
             idAttributeName: request.data[idAttributeName],
             'user': user,
-            'created': datetime.utcnow()
         }
         z = slz(data=data)
         if z.is_valid():
@@ -338,7 +356,7 @@ class Utils():
         else:
             return Response(z.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(z.data[idAttributeName], status=status.HTTP_201_CREATED)
-    
+
     @staticmethod
     def deleteRel(clazz, request, idAttributeName):
         id = request.data.pop(idAttributeName)
