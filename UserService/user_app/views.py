@@ -42,6 +42,7 @@ class UserCreation(generics.ListCreateAPIView):
             role_data = {
                 'role': role_name,
                 'user': user.pk,
+                'created': datetime.datetime.now()
             }
             z = RoleSerializer(data=role_data)
             if z.is_valid():
@@ -86,8 +87,9 @@ class UserDetail(generics.RetrieveUpdateDestroyAPIView):
             'created')
 
         resp.data['application_ids'] = ApplicationId.objects.filter(**fltr).values_list('application_id',
-                                                                                        flat=True).order_by(
-            'created')
+                                                                                        flat=True).order_by('created')
+
+        resp.data['alert_ids'] = JobPostAlertId.objects.filter(**fltr).values_list('alert_id', flat=True).order_by('created')
 
         return resp
 
@@ -142,6 +144,7 @@ class ProfileIdCreation(generics.CreateAPIView):
         data = {
             'profile_id': request.data['profile_id'],
             'user': user,
+            'created': datetime.datetime.now()
         }
         z = ProfileIdSerializer(data=data)
         if z.is_valid():
@@ -177,6 +180,7 @@ class ApplicationIdCreation(generics.CreateAPIView):
         data = {
             'application_id': request.data['application_id'],
             'user': user,
+            'created': datetime.datetime.now()
         }
         z = ApplicationIdSerializer(data=data)
         if z.is_valid():
@@ -197,6 +201,7 @@ class JobPostAlertIdCreation(generics.CreateAPIView):
         data = {
             'alert_id': request.data['alert_id'],
             'user': user,
+            'created': datetime.datetime.now()
         }
         z = JobPostAlertIdSerializer(data=data)
         if z.is_valid():
@@ -237,6 +242,7 @@ class LocationIdCreation(generics.CreateAPIView):
         data = {
             'location_id': request.data['location_id'],
             'user': user,
+            'created': datetime.datetime.now()
         }
         location_id = LocationId(**data)
         location_id.save()
@@ -269,6 +275,7 @@ class JobPostIdCreation(generics.CreateAPIView):
         data = {
             'job_post_id': request.data['job_post_id'],
             'user': user,
+            'created': datetime.datetime.now()
         }
         z = JobPostIdSerializer(data=data)
         if z.is_valid():
@@ -298,6 +305,7 @@ class ProviderProfileIdCreation(generics.CreateAPIView):
         data = {
             'provider_profile_id': request.data['provider_profile_id'],
             'user': user,
+            'created': datetime.datetime.now()
         }
         z = ProviderProfileIdSerializer(data=data)
         if z.is_valid():

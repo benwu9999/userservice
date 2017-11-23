@@ -94,21 +94,11 @@ class ProfileIdSerializer(serializers.ModelSerializer):
         id, created = ProfileId.objects.get_or_create(**validated_data);
         return id;
 
-    def to_representation(self, instance):
-        ret = super(ProfileIdSerializer, self).to_representation(instance)
-        ret['profile_id'] = ret['profile_id'].replace('-', '')
-        return ret
-
 
 class ProviderProfileIdSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProviderProfileId
         fields = '__all__'
-
-    def to_representation(self, instance):
-        ret = super(ProviderProfileIdSerializer, self).to_representation(instance)
-        ret['provider_profile_id'] = ret['provider_profile_id'].replace('-', '')
-        return ret
 
 
 class LocationIdSerializer(serializers.ModelSerializer):
@@ -116,21 +106,11 @@ class LocationIdSerializer(serializers.ModelSerializer):
         model = LocationId
         fields = '__all__'
 
-    def to_representation(self, instance):
-        ret = super(LocationIdSerializer, self).to_representation(instance)
-        ret['location_id'] = ret['location_id'].replace('-', '')
-        return ret
-
 
 class JobPostIdSerializer(serializers.ModelSerializer):
     class Meta:
         model = JobPostId
         fields = '__all__'
-
-    def to_representation(self, instance):
-        ret = super(JobPostIdSerializer, self).to_representation(instance)
-        ret['job_post_id'] = ret['job_post_id'].replace('-', '')
-        return ret
 
 
 class ApplicationIdSerializer(serializers.ModelSerializer):
@@ -138,20 +118,11 @@ class ApplicationIdSerializer(serializers.ModelSerializer):
         model = ApplicationId
         fields = '__all__'
 
-    def to_representation(self, instance):
-        ret = super(ApplicationIdSerializer, self).to_representation(instance)
-        ret['application_id'] = ret['application_id'].replace('-', '')
-        return ret
 
 class JobPostAlertIdSerializer(serializers.ModelSerializer):
     class Meta:
         model = JobPostAlertId
         fields = '__all__'
-
-    def to_representation(self, instance):
-        ret = super(JobPostAlertIdSerializer, self).to_representation(instance)
-        ret['alert_id'] = ret['alert_id'].replace('-', '')
-        return ret
 
 
 class RoleSerializer(serializers.ModelSerializer):

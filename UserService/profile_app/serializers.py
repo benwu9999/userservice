@@ -11,11 +11,6 @@ class CompensationSerializer(serializers.ModelSerializer):
         model = Compensation
         fields = '__all__'
 
-    def to_representation(self, instance):
-        ret = super(CompensationSerializer, self).to_representation(instance)
-        ret['compensation_id'] = ret['compensation_id'].replace('-', '')
-        return ret
-
 
 class SkillSerializer(serializers.ModelSerializer):
     class Meta:
