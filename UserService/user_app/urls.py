@@ -41,6 +41,7 @@ urlpatterns = [
     url(r'^user/rel/addApplication$', views.ApplicationIdCreation.as_view()),
 
     url(r'^user/rel/addAlert$', views.JobPostAlertIdCreation.as_view()),
+    url(r'^user/rel/alert$', views.JobPostAlertMapping.as_view()),
     url(r'^user/rel/deleteAlert', views.DeleteJobPostAlert.as_view()),
 
     url(r'^user$', views.UserCreation.as_view()),

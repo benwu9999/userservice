@@ -6,6 +6,7 @@ import sys
 from django.db.models import Q
 from django.http import HttpResponse
 from rest_framework import generics, status
+from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -77,6 +78,8 @@ class ProviderProfileById(APIView):
 
 
 class ProviderProfileSearch(APIView):
+    permission_classes = ()
+
     def get(self, request, format=None):
         try:
             qs = list()
@@ -85,17 +88,69 @@ class ProviderProfileSearch(APIView):
             if 'within' in request.query_params:
                 qs.append(Q(created__gt=Utils.get_epoch(request.query_params['within'])))
             if 'has' in request.query_params:
-                text_qs = list()
-                text_qs.append(Q(**{'company_name__icontains': request.query_params['has']}))
-                text_qs.append(Q(**{'description__icontains': request.query_params['has']}))
-                text_qs.append(Q(**{'email__icontains': request.query_params['has']}))
-                text_qs.append(Q(**{'phone__icontains': request.query_params['has']}))
-                text_qs.append(Q(**{'other_contact__icontains': request.query_params['has']}))
-                qs.append(reduce(operator.or_, text_qs))
-            z = ProviderProfileSerializer(ProviderProfile.objects.filter(reduce(operator.and_, qs)), many=True)
+                for param in request.query_params['has'].split(","):
+                    text_qs = list()
+                    text_qs.append(Q(**{'company_name__icontains': param}))
+                    text_qs.append(Q(**{'description__icontains': param}))
+                    text_qs.append(Q(**{'email__icontains': param}))
+                    text_qs.append(Q(**{'phone__icontains': param}))
+                    text_qs.append(Q(**{'other_contact__icontains': param}))
+                    qs.append(reduce(operator.or_, text_qs))
+            z = ProviderProfileSerializer(ProviderProfile.objects.filter(reduce(operator.or_, qs)), many=True)
+            # z = ProviderProfileSerializer(ProviderProfile.objects.filter(reduce(operator.and_, qs)), many=True)
             return Response(z.data)
         except:
             return Response(sys.exc_info()[0])
+
+
+class ProviderProfileByText(GenericAPIView):
+    permission_classes = ()
+
+    def post(self, request, *args, **kwargs):
+        try:
+            id_only = False
+            if 'id_only' in request.data and request.data['id_only'] == True:
+                id_only = True
+
+            # profile id -> profile dict
+            id_dict = dict()
+            # text -> [ids...]
+            text_to_id_dict = dict()
+            if 'has' in request.data:
+                if id_only:
+                    for param in request.data['has'].split(","):
+                        text_qs = self.create_qs(param)
+                        ids = ProviderProfile.objects.values_list('profile_id', flat=True).filter(
+                            reduce(operator.or_, text_qs))
+                        text_to_id_dict[param] = ids
+                    return Response(text_to_id_dict)
+                else:
+                    for param in request.data['has'].split(","):
+                        text_qs = self.create_qs(param)
+                        z = ProviderProfileSerializer(ProviderProfile.objects.filter(reduce(operator.or_, text_qs)),
+                                                      many=True)
+                        ids = list()
+                        for p in z.data:
+                            id = p['profile_id']
+                            if id not in id_dict:
+                                id_dict[id] = p
+                            ids.append(id)
+                        text_to_id_dict[param] = ids
+                    ret = dict()
+                    ret['idDict'] = id_dict
+                    ret['textDict'] = text_to_id_dict
+                    return Response(ret)
+        except:
+            return Response(sys.exc_info()[0])
+
+    def create_qs(self, param):
+        text_qs = list()
+        text_qs.append(Q(**{'company_name__icontains': param}))
+        text_qs.append(Q(**{'description__icontains': param}))
+        text_qs.append(Q(**{'email__icontains': param}))
+        text_qs.append(Q(**{'phone__icontains': param}))
+        text_qs.append(Q(**{'other_contact__icontains': param}))
+        return text_qs
 
 
 class ProviderProfileSearchByIds(APIView):

@@ -25,7 +25,9 @@ urlpatterns = [
     # unprotected views
     url(r'^providerProfile/ids', views.ProviderProfileSearchByIds.as_view()),
 
-    url(r'^providerProfile/search', views.ProviderProfileSearch.as_view()),
+    url(r'^providerProfile/byText?.*', views.ProviderProfileByText.as_view()),
+
+    url(r'^providerProfile/search?.*', views.ProviderProfileSearch.as_view()),
     # supports /profile/{profileId}
     url(r'^providerProfile/(?P<pk>.+)$', views.ProviderProfileDetail.as_view()),
 

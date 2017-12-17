@@ -1,4 +1,5 @@
 import logging
+from collections import defaultdict
 
 from datetime import datetime
 from django.http import HttpResponse
@@ -6,6 +7,8 @@ from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 
 from rest_framework.response import Response
+
+from django.db.models.query_utils import Q
 from .serializers import *
 from rest_framework import viewsets
 
@@ -89,7 +92,8 @@ class UserDetail(generics.RetrieveUpdateDestroyAPIView):
         resp.data['application_ids'] = ApplicationId.objects.filter(**fltr).values_list('application_id',
                                                                                         flat=True).order_by('created')
 
-        resp.data['alert_ids'] = JobPostAlertId.objects.filter(**fltr).values_list('alert_id', flat=True).order_by('created')
+        resp.data['alert_ids'] = JobPostAlertId.objects.filter(**fltr).values_list('alert_id', flat=True).order_by(
+            'created')
 
         return resp
 
@@ -209,6 +213,42 @@ class JobPostAlertIdCreation(generics.CreateAPIView):
         else:
             return Response(z.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(z.data['alert_id'], status=status.HTTP_201_CREATED)
+
+
+class JobPostAlertMapping(generics.ListCreateAPIView):
+    permission_classes = ()
+    queryset = JobPostAlertId.objects.all()
+    serializer_class = JobPostAlertIdSerializer
+
+    def post(self, request, *args, **kwargs):
+        if 'user_ids' not in request.data or request.data['user_ids'] is None:
+            alert_mappings = JobPostAlertId.objects.all()
+            users = User.objects.all()
+        else:
+            user_ids = request.data['user_ids'].split(',')
+            alert_mappings = JobPostAlertId.objects.filter(Q(user__in=user_ids))
+            users = User.objects.filter(Q(pk__in=user_ids))
+        job_post_alert_d = JobPostAlertIdSerializer(alert_mappings, many=True).data
+
+        user_d = UserSerializer(users, many=True).data
+
+        user_id_to_user_d = dict()
+        for u in user_d:
+            user_id_to_user_d[u['user_id']] = u
+        user_id_to_alert_ids_d = dict()
+        for d in job_post_alert_d:
+            alert_id = d['alert_id']
+            user_id = d['user']
+            user = user_id_to_user_d[user_id]
+
+            if user_id not in user_id_to_alert_ids_d:
+                user_id_to_alert_ids_d[user_id] = ComplexJson(user=user, alert_ids=[alert_id]);
+            else:
+                user_id_to_alert_ids_d[user_id].alert_ids.append(alert_id)
+
+        for key, value in user_id_to_alert_ids_d.iteritems():
+            user_id_to_alert_ids_d[key] = value.__dict__
+        return Response(user_id_to_alert_ids_d)
 
 
 class DeleteJobPostAlert(generics.CreateAPIView):
@@ -372,3 +412,8 @@ class Utils():
         if rel:
             rel.delete()
         return Response(status=status.HTTP_200_OK)
+
+
+class ComplexJson(object):
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
