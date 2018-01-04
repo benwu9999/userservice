@@ -1,6 +1,7 @@
 #
 #Ensure pip and setuptools are up to date before install packages below!!
 #
+--extra-index-url http://35.193.192.45:8090/simple/
 appdirs==1.4.3
 coreapi==2.3.0
 coreschema==0.0.4
