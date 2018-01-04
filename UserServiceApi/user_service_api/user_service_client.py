@@ -21,9 +21,13 @@ class UserServiceClient:
         parsed = json.loads(result)
         return parsed
 
-    def get_user_and_alerts(self, ids=None):
+    def get_user_and_alerts(self, ids=None, alert_ids=None):
+        data = dict()
         if ids is not None:
-            data = {'user_ids': ",".join(ids)}
+            data['user_ids'] = ",".join(ids)
+        if alert_ids is not None:
+            data['alert_ids'] = ",".join(alert_ids)
+        if data:
             jsonText = json.dumps(data)
             req = urllib2.Request(self.url + 'rel/alert', jsonText, self.content_type)
         else:
@@ -43,12 +47,14 @@ def test_get_user():
 
 
 def test_get_alert():
-    global test_ids, obj
-    test_ids = ['js06']
-    obj = client.get_user_and_alerts(test_ids)
-    print(json.dumps(obj))
-    test_ids = None
-    obj = client.get_user_and_alerts(test_ids)
+    # test_ids = ['js06']
+    # obj = client.get_user_and_alerts(test_ids)
+    # print(json.dumps(obj))
+    # test_ids = None
+    # obj = client.get_user_and_alerts(test_ids)
+    # print(json.dumps(obj))
+    alert_ids = ['7aa7569dd2974f8db65d8a686801ecb0']
+    obj = client.get_user_and_alerts(alert_ids=alert_ids)
     print(json.dumps(obj))
 
 

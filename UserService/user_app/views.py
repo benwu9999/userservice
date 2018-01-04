@@ -2,6 +2,10 @@ import logging
 from collections import defaultdict
 
 from datetime import datetime
+
+import operator
+from uuid import UUID
+
 from django.http import HttpResponse
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
@@ -28,31 +32,38 @@ class UserCreation(generics.ListCreateAPIView):
     permission_classes = ()
 
     def post(self, request, *args, **kwargs):
-        request.data.pop('locations')
-        request.data.pop('profiles')
+        try:
+            data = request.data
+            data.pop('locations')
+            data.pop('profiles')
+            data.pop('alerts')
+            data.pop('applications')
 
-        role_names = request.data.pop('roles')
-        if 'user_id' not in request.data:
-            okStatus = status.HTTP_201_CREATED
-        else:
-            okStatus = status.HTTP_200_OK
-        user = User(**request.data)
-        user.set_password(request.data['password'])
-        user.is_active = True
-        user.save()
-        # super(UserCreation, self).post(request, *args, **kwargs)
-        for role_name in role_names:
-            role_data = {
-                'role': role_name,
-                'user': user.pk,
-                'created': datetime.datetime.now()
-            }
-            z = RoleSerializer(data=role_data)
-            if z.is_valid():
-                z.save()
+            role_names = data.pop('roles')
+            if 'user_id' not in data:
+                okStatus = status.HTTP_201_CREATED
             else:
-                return Response(z.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response(UserSerializer(user).data, status=okStatus)
+                okStatus = status.HTTP_200_OK
+            user = User(**data)
+            user.set_password(data['password'])
+            user.is_active = True
+            user.save()
+            # super(UserCreation, self).post(request, *args, **kwargs)
+            for role_name in role_names:
+                role_data = {
+                    'role': role_name,
+                    'user': user.pk,
+                    'created': datetime.datetime.now()
+                }
+                z = RoleSerializer(data=role_data)
+                if z.is_valid():
+                    z.save()
+                else:
+                    return Response(z.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(UserSerializer(user).data, status=okStatus)
+        except Exception as e:
+            print '%s (%s)' % (e, type(e))
+            return Response(e.message)
         # else:
         #     return Response(user.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -140,23 +151,23 @@ class ProfileIdCreation(generics.CreateAPIView):
     serializer_class = ProfileIdSerializer
 
     def post(self, request, *args, **kwargs):
-        user_id = request.data.pop('user_id')
-        # queryset = User.objects.all()
-        # filter = {'user_id': user_id}
-        user = get_object_or_404(User, pk=user_id)
+        try:
+            user_id = request.data.pop('user_id')
+            # queryset = User.objects.all()
+            # filter = {'user_id': user_id}
+            user = get_object_or_404(User, pk=user_id)
 
-        data = {
-            'profile_id': request.data['profile_id'],
-            'user': user,
-            'created': datetime.datetime.now()
-        }
-        z = ProfileIdSerializer(data=data)
-        if z.is_valid():
-            z.save()
-        else:
-            return Response(z.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response(z.data['profile_id'], status=status.HTTP_201_CREATED)
-
+            data = {
+                'profile_id': request.data['profile_id'],
+                'user': user,
+                'created': datetime.datetime.now()
+            }
+            profile_id = ProfileId(**data)
+            profile_id.save()
+            return Response(ProfileIdSerializer(profile_id).data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            print '%s (%s)' % (e, type(e))
+            return Response(e.message)
 
 class DeleteProfile(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
@@ -178,42 +189,43 @@ class ApplicationIdCreation(generics.CreateAPIView):
     serializer_class = ApplicationIdSerializer
 
     def post(self, request, *args, **kwargs):
-        user_id = request.data.pop('user_id')
-        user = get_object_or_404(User, pk=user_id)
+        try:
+            user_id = request.data.pop('user_id')
+            user = get_object_or_404(User, pk=user_id)
 
-        data = {
-            'application_id': request.data['application_id'],
-            'user': user,
-            'created': datetime.datetime.now()
-        }
-        z = ApplicationIdSerializer(data=data)
-        if z.is_valid():
-            z.save()
-        else:
-            return Response(z.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response(z.data['application_id'], status=status.HTTP_201_CREATED)
-
+            data = {
+                'application_id': request.data['application_id'],
+                'user': user,
+                'created': datetime.datetime.now()
+            }
+            application_id = ApplicationId(**data)
+            application_id.save()
+            return Response(ApplicationIdSerializer(application_id).data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            print '%s (%s)' % (e, type(e))
+            return Response(e.message)
 
 class JobPostAlertIdCreation(generics.CreateAPIView):
     queryset = JobPostAlertId.objects.all()
     serializer_class = JobPostAlertIdSerializer
 
     def post(self, request, *args, **kwargs):
-        user_id = request.data.pop('user_id')
-        user = get_object_or_404(User, pk=user_id)
+        try:
+            user_id = request.data.pop('user_id')
+            user = get_object_or_404(User, pk=user_id)
 
-        data = {
-            'alert_id': request.data['alert_id'],
-            'user': user,
-            'created': datetime.datetime.now()
-        }
-        z = JobPostAlertIdSerializer(data=data)
-        if z.is_valid():
-            z.save()
-        else:
-            return Response(z.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response(z.data['alert_id'], status=status.HTTP_201_CREATED)
-
+            data = {
+                'alert_id': request.data['alert_id'],
+                'user': user,
+                'created': datetime.datetime.now()
+            }
+            mapping = JobPostAlertId(**data)
+            mapping.save()
+            z = JobPostAlertIdSerializer(mapping)
+            return Response(z.data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            print '%s (%s)' % (e, type(e))
+            return Response(e.message)
 
 class JobPostAlertMapping(generics.ListCreateAPIView):
     permission_classes = ()
@@ -221,13 +233,23 @@ class JobPostAlertMapping(generics.ListCreateAPIView):
     serializer_class = JobPostAlertIdSerializer
 
     def post(self, request, *args, **kwargs):
-        if 'user_ids' not in request.data or request.data['user_ids'] is None:
-            alert_mappings = JobPostAlertId.objects.all()
+        has_no_user = 'user_ids' not in request.data or request.data['user_ids'] is None
+        has_no_alert = 'alert_ids' not in request.data or request.data['alert_ids'] is None
+
+        qs = list()
+        if not has_no_alert:
+            alert_ids = request.data['alert_ids'].split(',')
+            qs.append(Q(pk__in=alert_ids))
+        if has_no_user:
             users = User.objects.all()
         else:
             user_ids = request.data['user_ids'].split(',')
-            alert_mappings = JobPostAlertId.objects.filter(Q(user__in=user_ids))
-            users = User.objects.filter(Q(pk__in=user_ids))
+            users = User.objects.filter(pk__in=user_ids)
+            qs.append(Q(user__in=user_ids))
+        if qs:
+            alert_mappings = JobPostAlertId.objects.filter(reduce(operator.and_, qs))
+        else:
+            alert_mappings = JobPostAlertId.objects.all()
         job_post_alert_d = JobPostAlertIdSerializer(alert_mappings, many=True).data
 
         user_d = UserSerializer(users, many=True).data
@@ -274,19 +296,23 @@ class LocationIdCreation(generics.CreateAPIView):
     serializer_class = LocationIdSerializer
 
     def post(self, request, *args, **kwargs):
-        user_id = request.data.pop('user_id')
-        # queryset = User.objects.all()
-        # filter = {'user_id': user_id}
-        user = get_object_or_404(User, pk=user_id)
+        try:
+            user_id = request.data.pop('user_id')
+            # queryset = User.objects.all()
+            # filter = {'user_id': user_id}
+            user = get_object_or_404(User, pk=user_id)
 
-        data = {
-            'location_id': request.data['location_id'],
-            'user': user,
-            'created': datetime.datetime.now()
-        }
-        location_id = LocationId(**data)
-        location_id.save()
-        return Response(LocationIdSerializer(location_id).data, status=status.HTTP_201_CREATED)
+            data = {
+                'location_id': request.data['location_id'],
+                'user': user,
+                'created': datetime.datetime.now()
+            }
+            location_id = LocationId(**data)
+            location_id.save()
+            return Response(LocationIdSerializer(location_id).data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            print '%s (%s)' % (e, type(e))
+            return Response(e.message)
 
 
 class DeleteLocation(generics.CreateAPIView):
@@ -309,21 +335,21 @@ class JobPostIdCreation(generics.CreateAPIView):
     serializer_class = JobPostIdSerializer
 
     def post(self, request, *args, **kwargs):
-        user_id = request.data.pop('user_id')
-        user = get_object_or_404(User, pk=user_id)
+        try:
+            user_id = request.data.pop('user_id')
+            user = get_object_or_404(User, pk=user_id)
 
-        data = {
-            'job_post_id': request.data['job_post_id'],
-            'user': user,
-            'created': datetime.datetime.now()
-        }
-        z = JobPostIdSerializer(data=data)
-        if z.is_valid():
-            z.save()
-        else:
-            return Response(z.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response(z.data['job_post_id'], status=status.HTTP_201_CREATED)
-
+            data = {
+                'job_post_id': request.data['job_post_id'],
+                'user': user,
+                'created': datetime.datetime.now()
+            }
+            job_post_id = JobPostId(**data)
+            job_post_id.save()
+            return Response(JobPostIdSerializer(job_post_id).data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            print '%s (%s)' % (e, type(e))
+            return Response(e.message)
 
 class DeleteJobPost(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
@@ -339,21 +365,21 @@ class ProviderProfileIdCreation(generics.CreateAPIView):
     serializer_class = ProviderProfileIdSerializer
 
     def post(self, request, *args, **kwargs):
-        user_id = request.data.pop('user_id')
-        user = get_object_or_404(User, pk=user_id)
+        try:
+            user_id = request.data.pop('user_id')
+            user = get_object_or_404(User, pk=user_id)
 
-        data = {
-            'provider_profile_id': request.data['provider_profile_id'],
-            'user': user,
-            'created': datetime.datetime.now()
-        }
-        z = ProviderProfileIdSerializer(data=data)
-        if z.is_valid():
-            z.save()
-        else:
-            return Response(z.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response(z.data['provider_profile_id'], status=status.HTTP_201_CREATED)
-
+            data = {
+                'provider_profile_id': request.data['provider_profile_id'],
+                'user': user,
+                'created': datetime.datetime.now()
+            }
+            profile_id = ProviderProfileId(**data)
+            profile_id.save()
+            return Response(ProviderProfileIdSerializer(profile_id).data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            print '%s (%s)' % (e, type(e))
+            return Response(e.message)
 
 class DeleteProviderProfile(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):

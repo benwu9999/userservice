@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import *
-
+from rest_framework import serializers
 
 class UserSerializer(serializers.ModelSerializer):
     """
@@ -90,6 +90,8 @@ class ProfileIdSerializer(serializers.ModelSerializer):
         model = ProfileId
         fields = '__all__'
 
+    profile_id = serializers.UUIDField(format='hex')
+
     def create(self, validated_data):
         id, created = ProfileId.objects.get_or_create(**validated_data);
         return id;
@@ -100,30 +102,35 @@ class ProviderProfileIdSerializer(serializers.ModelSerializer):
         model = ProviderProfileId
         fields = '__all__'
 
+    provider_profile_id = serializers.UUIDField(format='hex')
 
 class LocationIdSerializer(serializers.ModelSerializer):
     class Meta:
         model = LocationId
         fields = '__all__'
 
+    location_id = serializers.UUIDField(format='hex')
 
 class JobPostIdSerializer(serializers.ModelSerializer):
     class Meta:
         model = JobPostId
         fields = '__all__'
 
+    job_post_id = serializers.UUIDField(format='hex')
 
 class ApplicationIdSerializer(serializers.ModelSerializer):
     class Meta:
         model = ApplicationId
         fields = '__all__'
 
+    application_id = serializers.UUIDField(format='hex')
 
 class JobPostAlertIdSerializer(serializers.ModelSerializer):
     class Meta:
         model = JobPostAlertId
         fields = '__all__'
 
+    # alert_id = serializers.UUIDField(format='hex')
 
 class RoleSerializer(serializers.ModelSerializer):
     class Meta:
