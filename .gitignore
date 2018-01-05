@@ -5,3 +5,4 @@ UserService/profile_app/migrations/*
 UserService/provider_profile_app/migrations/*
 UserServiceApi/dist
 UserServiceApi/user_service_api.egg-info
+UserServiceApi/user_service_api.egg-info/*
