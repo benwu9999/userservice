@@ -17,10 +17,10 @@ import dateutil.parser
 
 # fields in model will use camel case so django can parse json which is also camel case
 class AbstractMapping(models.Model):
-    user = models.ForeignKey(
+    email = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        db_column='user_id'
+        db_column='email'
     )
     created = UnixDateTimeField()
 
@@ -84,6 +84,7 @@ class Role(AbstractMapping):
 
     class Meta:
         db_table = 'user_role'
+        unique_together = (('role', 'email'),)
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -93,24 +94,22 @@ class User(AbstractBaseUser, PermissionsMixin):
     # validators
     phone_validator = RegexValidator(regex=r'^\+?1?\d{9,15}$',
                                      message="Phone number format: '+999999999'. Max 15# allowed.")
-    user_id = models.CharField(primary_key=True, max_length=40, null=False, blank=False)
+    email = models.EmailField(_('email address'), primary_key=True, validators=[validate_email, ], null=False, blank=False)
     first_name = models.CharField(_('first name'), max_length=30, null=True, blank=True)
     last_name = models.CharField(_('last name'), max_length=30, null=True, blank=True)
-    email = models.EmailField(_('email address'), validators=[validate_email, ])
     phone = models.CharField(validators=[phone_validator, ], max_length=15, null=True, blank=True)
     # not considering provider profile for now, assume all users are seekers
     active_profile_id = models.UUIDField(primary_key=False, default=uuid.uuid4, editable=False)
     active_provider_profile_id = models.UUIDField(primary_key=False, default=uuid.uuid4, editable=False)
     active_location_id = models.UUIDField(primary_key=False, default=uuid.uuid4, editable=False)
     active = models.BooleanField(_('active'), default=True)
-
+    lang = models.CharField(max_length=2, null=True, blank=True)
     created = UnixDateTimeField()
     modified = UnixDateTimeField(auto_now=True)
 
     objects = UserManager()
 
-    USERNAME_FIELD = 'user_id'
-    REQUIRED_FIELDS = ['email']
+    USERNAME_FIELD = 'email'
 
     def save(self, *args, **kwargs):
         if not self.created:

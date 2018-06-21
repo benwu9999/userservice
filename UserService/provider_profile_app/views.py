@@ -7,6 +7,7 @@ from django.db.models import Q
 from django.http import HttpResponse
 from rest_framework import generics, status
 from rest_framework.generics import GenericAPIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -59,7 +60,7 @@ class ProviderProfileList(generics.ListCreateAPIView):
 class ProviderProfileDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = ProviderProfile.objects.all()
     serializer_class = ProviderProfileSerializer
-
+    permission_classes = (IsAuthenticated,)
 
 class AllIdsList(APIView):
     """
@@ -78,7 +79,7 @@ class ProviderProfileById(APIView):
 
 
 class ProviderProfileSearch(APIView):
-    permission_classes = ()
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request, format=None):
         try:
@@ -104,7 +105,7 @@ class ProviderProfileSearch(APIView):
 
 
 class ProviderProfileByText(GenericAPIView):
-    permission_classes = ()
+    permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
         try:
@@ -154,9 +155,7 @@ class ProviderProfileByText(GenericAPIView):
 
 
 class ProviderProfileSearchByIds(APIView):
-    authentication_classes = ()
     permission_classes = ()
-
     def get(self, request, format=None):
         if 'ids' in request.query_params:
             q = Q(pk__in=request.query_params['ids'].split(','))

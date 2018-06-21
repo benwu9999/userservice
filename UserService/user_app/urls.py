@@ -45,14 +45,21 @@ urlpatterns = [
     url(r'^user/rel/deleteAlert', views.DeleteJobPostAlert.as_view()),
 
     url(r'^user$', views.UserCreation.as_view()),
+    url(r'^user/exists/(?P<email>.+)$', views.UserExists.as_view()),
+    url(r'^user/savePassword$', views.SavePassword.as_view()),
     # url(r'^user$', views.UserList.as_view()),
-    url(r'^user/(?P<user_id>.+)$', views.UserDetail.as_view()),
+    url(r'^user/(?P<email>.+)$', views.UserDetail.as_view()),
+
 
     # endpoints for JWT token
     # url(r'^authService/login$', obtain_jwt_token),
     url(r'^authService/login$', obtain_jwt_token),
     url(r'^authService/verify$', verify_jwt_token),
     url(r'^authService/refresh$', refresh_jwt_token),
+
+    url(r'^authService/resetPassword$', views.ResetPassword.as_view()),
+    url(r'^authService/verifyResetId', views.VerifyResetId.as_view()),
+
 ]
 
 # urlpatterns = router.urls

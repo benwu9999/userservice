@@ -1,28 +1,63 @@
 import logging
-from collections import defaultdict
-
+import operator
 from datetime import datetime
 
-import operator
-from uuid import UUID
-
-from django.http import HttpResponse
-from rest_framework import generics, status
-from rest_framework.permissions import IsAuthenticated
-
-from rest_framework.response import Response
-
+import requests
 from django.db.models.query_utils import Q
-from .serializers import *
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from django.template import loader
+from rest_framework import generics, status
 from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from django.http import JsonResponse
 
-from django.shortcuts import get_object_or_404, get_list_or_404
+from .serializers import *
 
 logger = logging.getLogger(__name__)
 
 
 def index(request):
     return HttpResponse("user service api")
+
+
+class UserExists(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = ()
+    lookup_field = 'email'
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+    def get(self, request, *args, **kwargs):
+        user = User.objects.filter(pk=kwargs['email'])
+        found = user.exists()
+        ret = {
+            'found': found
+        }
+        return JsonResponse(ret)
+
+
+class SavePassword(generics.ListCreateAPIView):
+    permission_classes = ()
+
+    def post(self, request, *args, **kwargs):
+        try:
+            data = request.data
+            reset_id = data.pop('id')
+            ele = reset_id.split('.')
+            encoded_user_id = ele[0]
+            token = ele[1]
+            uid = urlsafe_base64_decode(encoded_user_id)
+            existing_user = User.objects.get(pk=uid)
+            if existing_user is not None and default_token_generator.check_token(existing_user, token):
+                existing_user.set_password(data['password'])
+                existing_user.save();
+                return Response(status=status.HTTP_201_CREATED)
+            else:
+                return Response(status=status.HTTP_403_FORBIDDEN)
+        except Exception as e:
+            print '%s (%s)' % (e, type(e))
+            return Response(e.message)
 
 
 class UserCreation(generics.ListCreateAPIView):
@@ -40,26 +75,33 @@ class UserCreation(generics.ListCreateAPIView):
             data.pop('applications')
 
             role_names = data.pop('roles')
-            if 'user_id' not in data:
-                okStatus = status.HTTP_201_CREATED
-            else:
-                okStatus = status.HTTP_200_OK
+            email = data['email']
+            existing_user = User.objects.filter(pk=email)
+            new_password = data.pop('new_password')
             user = User(**data)
-            user.set_password(data['password'])
+            if not existing_user:
+                okStatus = status.HTTP_201_CREATED
+                user.set_password(data['password'])
+            else:
+                if new_password:
+                    user.set_password(new_password)
+                okStatus = status.HTTP_200_OK
             user.is_active = True
             user.save()
             # super(UserCreation, self).post(request, *args, **kwargs)
             for role_name in role_names:
                 role_data = {
                     'role': role_name,
-                    'user': user.pk,
+                    'email': user.pk,
                     'created': datetime.datetime.now()
                 }
-                z = RoleSerializer(data=role_data)
-                if z.is_valid():
-                    z.save()
-                else:
-                    return Response(z.errors, status=status.HTTP_400_BAD_REQUEST)
+                existing_role = Role.objects.filter(email=user.pk, role=role_name)
+                if not existing_role:
+                    z = RoleSerializer(data=role_data)
+                    if z.is_valid():
+                        z.save()
+                    else:
+                        return Response(z.errors, status=status.HTTP_400_BAD_REQUEST)
             return Response(UserSerializer(user).data, status=okStatus)
         except Exception as e:
             print '%s (%s)' % (e, type(e))
@@ -78,15 +120,14 @@ class UserCreation(generics.ListCreateAPIView):
 class UserDetail(generics.RetrieveUpdateDestroyAPIView):
     # override the default lookup field "PK" with the lookup field for this model
     # TODO should be set to authenticated in production for superuser only
-    # permission_classes = (IsAuthenticated,)
-    lookup_field = 'user_id'
+    permission_classes = (IsAuthenticated,)
+    lookup_field = 'email'
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
     def get(self, request, *args, **kwargs):
         resp = super(UserDetail, self).retrieve(request, *args, **kwargs)
-
-        fltr = {'user_id': resp.data['user_id']}
+        fltr = {'email': resp.data['email']}
 
         resp.data['roles'] = Role.objects.filter(**fltr).values_list('role', flat=True)
         if 'SEEKER' in resp.data['roles']:
@@ -152,14 +193,14 @@ class ProfileIdCreation(generics.CreateAPIView):
 
     def post(self, request, *args, **kwargs):
         try:
-            user_id = request.data.pop('user_id')
+            email = request.data.pop('email')
             # queryset = User.objects.all()
-            # filter = {'user_id': user_id}
-            user = get_object_or_404(User, pk=user_id)
+            # filter = {'email': email}
+            user = get_object_or_404(User, pk=email)
 
             data = {
                 'profile_id': request.data['profile_id'],
-                'user': user,
+                'email': user,
                 'created': datetime.datetime.now()
             }
             profile_id = ProfileId(**data)
@@ -169,6 +210,7 @@ class ProfileIdCreation(generics.CreateAPIView):
             print '%s (%s)' % (e, type(e))
             return Response(e.message)
 
+
 class DeleteProfile(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
         profile_id = request.data.pop('profile_id')
@@ -176,8 +218,8 @@ class DeleteProfile(generics.CreateAPIView):
         if profile_rel:
             profile_rel.delete()
 
-        user_id = request.data.pop('user_id')
-        user = User.objects.get(pk=user_id)
+        email = request.data.pop('email')
+        user = User.objects.get(pk=email)
         if user and user.active_profile_id == profile_id:
             user.active_profile_id = None;
             user.save();
@@ -190,12 +232,12 @@ class ApplicationIdCreation(generics.CreateAPIView):
 
     def post(self, request, *args, **kwargs):
         try:
-            user_id = request.data.pop('user_id')
-            user = get_object_or_404(User, pk=user_id)
+            email = request.data.pop('email')
+            user = get_object_or_404(User, pk=email)
 
             data = {
                 'application_id': request.data['application_id'],
-                'user': user,
+                'email': user,
                 'created': datetime.datetime.now()
             }
             application_id = ApplicationId(**data)
@@ -205,18 +247,19 @@ class ApplicationIdCreation(generics.CreateAPIView):
             print '%s (%s)' % (e, type(e))
             return Response(e.message)
 
+
 class JobPostAlertIdCreation(generics.CreateAPIView):
     queryset = JobPostAlertId.objects.all()
     serializer_class = JobPostAlertIdSerializer
 
     def post(self, request, *args, **kwargs):
         try:
-            user_id = request.data.pop('user_id')
-            user = get_object_or_404(User, pk=user_id)
+            email = request.data.pop('email')
+            user = get_object_or_404(User, pk=email)
 
             data = {
                 'alert_id': request.data['alert_id'],
-                'user': user,
+                'email': user,
                 'created': datetime.datetime.now()
             }
             mapping = JobPostAlertId(**data)
@@ -227,13 +270,14 @@ class JobPostAlertIdCreation(generics.CreateAPIView):
             print '%s (%s)' % (e, type(e))
             return Response(e.message)
 
+
 class JobPostAlertMapping(generics.ListCreateAPIView):
     permission_classes = ()
     queryset = JobPostAlertId.objects.all()
     serializer_class = JobPostAlertIdSerializer
 
     def post(self, request, *args, **kwargs):
-        has_no_user = 'user_ids' not in request.data or request.data['user_ids'] is None
+        has_no_user = 'emails' not in request.data or request.data['emails'] is None
         has_no_alert = 'alert_ids' not in request.data or request.data['alert_ids'] is None
 
         qs = list()
@@ -243,9 +287,9 @@ class JobPostAlertMapping(generics.ListCreateAPIView):
         if has_no_user:
             users = User.objects.all()
         else:
-            user_ids = request.data['user_ids'].split(',')
-            users = User.objects.filter(pk__in=user_ids)
-            qs.append(Q(user__in=user_ids))
+            emails = request.data['emails'].split(',')
+            users = User.objects.filter(pk__in=emails)
+            qs.append(Q(user__in=emails))
         if qs:
             alert_mappings = JobPostAlertId.objects.filter(reduce(operator.and_, qs))
         else:
@@ -254,23 +298,23 @@ class JobPostAlertMapping(generics.ListCreateAPIView):
 
         user_d = UserSerializer(users, many=True).data
 
-        user_id_to_user_d = dict()
+        email_to_user_d = dict()
         for u in user_d:
-            user_id_to_user_d[u['user_id']] = u
-        user_id_to_alert_ids_d = dict()
+            email_to_user_d[u['email']] = u
+        email_to_alert_ids_d = dict()
         for d in job_post_alert_d:
             alert_id = d['alert_id']
-            user_id = d['user']
-            user = user_id_to_user_d[user_id]
+            email = d['email']
+            user = email_to_user_d[email]
 
-            if user_id not in user_id_to_alert_ids_d:
-                user_id_to_alert_ids_d[user_id] = ComplexJson(user=user, alert_ids=[alert_id]);
+            if email not in email_to_alert_ids_d:
+                email_to_alert_ids_d[email] = ComplexJson(user=user, alert_ids=[alert_id]);
             else:
-                user_id_to_alert_ids_d[user_id].alert_ids.append(alert_id)
+                email_to_alert_ids_d[email].alert_ids.append(alert_id)
 
-        for key, value in user_id_to_alert_ids_d.iteritems():
-            user_id_to_alert_ids_d[key] = value.__dict__
-        return Response(user_id_to_alert_ids_d)
+        for key, value in email_to_alert_ids_d.iteritems():
+            email_to_alert_ids_d[key] = value.__dict__
+        return Response(email_to_alert_ids_d)
 
 
 class DeleteJobPostAlert(generics.CreateAPIView):
@@ -297,14 +341,12 @@ class LocationIdCreation(generics.CreateAPIView):
 
     def post(self, request, *args, **kwargs):
         try:
-            user_id = request.data.pop('user_id')
-            # queryset = User.objects.all()
-            # filter = {'user_id': user_id}
-            user = get_object_or_404(User, pk=user_id)
+            email = request.data.pop('email')
+            user_by_email = get_object_or_404(User, pk=email)
 
             data = {
                 'location_id': request.data['location_id'],
-                'user': user,
+                'email': user_by_email,
                 'created': datetime.datetime.now()
             }
             location_id = LocationId(**data)
@@ -322,8 +364,8 @@ class DeleteLocation(generics.CreateAPIView):
         if location_rel:
             location_rel.delete()
 
-        user_id = request.data.pop('user_id')
-        user = User.objects.get(pk=user_id)
+        email = request.data.pop('email')
+        user = User.objects.get(pk=email)
         if user and user.active_location_id == location_id:
             user.active_location_id = None;
             user.save();
@@ -336,12 +378,12 @@ class JobPostIdCreation(generics.CreateAPIView):
 
     def post(self, request, *args, **kwargs):
         try:
-            user_id = request.data.pop('user_id')
-            user = get_object_or_404(User, pk=user_id)
+            email = request.data.pop('email')
+            user = get_object_or_404(User, pk=email)
 
             data = {
                 'job_post_id': request.data['job_post_id'],
-                'user': user,
+                'email': user,
                 'created': datetime.datetime.now()
             }
             job_post_id = JobPostId(**data)
@@ -350,6 +392,7 @@ class JobPostIdCreation(generics.CreateAPIView):
         except Exception as e:
             print '%s (%s)' % (e, type(e))
             return Response(e.message)
+
 
 class DeleteJobPost(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
@@ -366,12 +409,12 @@ class ProviderProfileIdCreation(generics.CreateAPIView):
 
     def post(self, request, *args, **kwargs):
         try:
-            user_id = request.data.pop('user_id')
-            user = get_object_or_404(User, pk=user_id)
+            email = request.data.pop('email')
+            user = get_object_or_404(User, pk=email)
 
             data = {
                 'provider_profile_id': request.data['provider_profile_id'],
-                'user': user,
+                'email': user,
                 'created': datetime.datetime.now()
             }
             profile_id = ProviderProfileId(**data)
@@ -381,6 +424,7 @@ class ProviderProfileIdCreation(generics.CreateAPIView):
             print '%s (%s)' % (e, type(e))
             return Response(e.message)
 
+
 class DeleteProviderProfile(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
         provider_profile_id = request.data.pop('provider_profile_id')
@@ -388,8 +432,8 @@ class DeleteProviderProfile(generics.CreateAPIView):
         if provider_profile:
             provider_profile.delete()
 
-        user_id = request.data.pop('user_id')
-        user = User.objects.get(pk=user_id)
+        email = request.data.pop('email')
+        user = User.objects.get(pk=email)
         if user and user.active_profile_id == provider_profile_id:
             user.active_profile_id = None;
             user.save();
@@ -398,8 +442,8 @@ class DeleteProviderProfile(generics.CreateAPIView):
 
 class ActivateProfile(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
-        user_id = request.data.pop('user_id')
-        user = get_object_or_404(User, pk=user_id)
+        email = request.data.pop('email')
+        user = get_object_or_404(User, pk=email)
         user.active_profile_id = request.data['profile_id']
         user.save();
         return Response(status=status.HTTP_200_OK)
@@ -407,18 +451,97 @@ class ActivateProfile(generics.CreateAPIView):
 
 class ActivateLocation(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
-        user_id = request.data.pop('user_id')
-        user = get_object_or_404(User, pk=user_id)
+        email = request.data.pop('email')
+        user = get_object_or_404(User, pk=email)
         user.active_location_id = request.data['location_id']
         user.save();
         return Response(status=status.HTTP_200_OK)
 
 
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+
+
+class ResetPassword(generics.CreateAPIView):
+    key = 'key-992449508ab9bedb746eb2b72af6e01f'
+    sandbox = 'sandbox4ce17324a56c48e28aa83dcb313ed504.mailgun.org'
+
+    permission_classes = ()
+
+    # token_generator = OneseekPasswordResetTokenGenerator()
+
+    def post(self, request, *args, **kwargs):
+        try:
+            email = request.data.pop('email')
+            existing_user = User.objects.get(pk=email)
+            if existing_user:
+                self._send_email(existing_user, email);
+            return Response(status=status.HTTP_201_CREATED)
+        except Exception as e:
+            print '%s (%s)' % (e, type(e))
+            return Response(e.message)
+
+    def _send_email(self, user, email):
+        request_url = 'https://api.mailgun.net/v2/{0}/messages'.format(self.sandbox)
+        template = loader.get_template('email_template.html')
+        encoded_user_id = urlsafe_base64_encode(force_bytes(email))
+        token = default_token_generator.make_token(user)
+        context = {
+            'reset_link': "http://localhost:4200/home/confirmResetPassword?id=" + encoded_user_id + '.' + token,
+        }
+        html = template.render(context)
+        request = requests.post(
+            request_url,
+            auth=("api", self.key),
+            data={
+                "from": "hello@example.com",
+                "to": email,
+                "subject": "Oneseek Password Reset",
+                "text": 'html version of email failed to display',
+                "html": html,
+            }
+        )
+        print('Status: {0}'.format(request.status_code))
+        print('Body:   {0}'.format(request.text))
+
+
+class VerifyResetId(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = ()
+
+    def get(self, request, *args, **kwargs):
+        reset_id = request.GET['id']
+        ele = reset_id.split('.')
+        encoded_user_id = ele[0]
+        token = ele[1]
+        uid = urlsafe_base64_decode(encoded_user_id)
+        existing_user = User.objects.get(pk=uid)
+        if existing_user is not None and default_token_generator.check_token(existing_user, token):
+            return Response(uid, status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+
+class ConfirmResetPassword(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = ()
+    lookup_field = 'email'
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+    def get(self, request, *args, **kwargs):
+        user = User.objects.filter(pk=kwargs['email'])
+        found = user.exists()
+        ret = {
+            'found': "true",
+        }
+        return Response(ret, status=status.HTTP_200_OK)
+
+
 class Utils():
     @staticmethod
-    def createRel(clazz, request, idAttributeName, slz):
-        user_id = request.data.pop('user_id')
-        user = get_object_or_404(User, pk=user_id)
+    def create_rel(clazz, request, idAttributeName, slz):
+        email = request.data.pop('email')
+        user = get_object_or_404(User, pk=email)
 
         data = {
             idAttributeName: request.data[idAttributeName],

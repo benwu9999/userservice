@@ -24,7 +24,7 @@ class UserServiceClient:
     def get_user_and_alerts(self, ids=None, alert_ids=None):
         data = dict()
         if ids is not None:
-            data['user_ids'] = ",".join(ids)
+            data['email'] = ",".join(ids)
         if alert_ids is not None:
             data['alert_ids'] = ",".join(alert_ids)
         if data:

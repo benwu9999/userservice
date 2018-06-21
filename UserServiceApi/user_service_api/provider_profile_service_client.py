@@ -8,16 +8,18 @@ class ProviderProfileServiceClient:
     DEFAULT_URL = os.getenv('PROVIDER_PROFILE_SVC_URL', 'http://127.0.0.1:8013/providerProfile/');
     content_type = {'Content-Type': 'application/json'}
 
-    def __init__(self, url):
+    def __init__(self, token, url):
         if url:
             self.url = url
         else:
             self.url = ProviderProfileServiceClient.DEFAULT_URL
+        self.header = {'Authorization': 'Bearer ' + token}
 
     def get(self, ids):
         if not ids:
             return [];
-        result = urllib2.urlopen(self.url + 'search?ids=' + ",".join(ids)).read()
+        req = urllib2.Request(self.url + 'search?ids=' + ",".join(ids), headers=self.header)
+        result = urllib2.urlopen(req).read()
         parsed = json.loads(result)
         return parsed
 
@@ -27,8 +29,8 @@ class ProviderProfileServiceClient:
         names_str = ",".join(names)
         params = {'has': names_str}
         params_str = urllib.urlencode(params)
-
-        result = urllib2.urlopen(self.url + 'search?' + params_str).read()
+        req = urllib2.Request(self.url + 'search?' + params_str, headers=self.header)
+        result = urllib2.urlopen(req).read()
         parsed = json.loads(result)
         d = {}
         for p in parsed:
@@ -44,7 +46,7 @@ class ProviderProfileServiceClient:
             'idOnly': id_only
         }
         json_text = json.dumps(data)
-        req = urllib2.Request(self.url + 'byText', json_text, self.content_type)
+        req = urllib2.Request(self.url + 'byText', json_text, self.content_type, headers=self.header)
         response = urllib2.urlopen(req)
         result = response.read()
         parsed = json.loads(result)

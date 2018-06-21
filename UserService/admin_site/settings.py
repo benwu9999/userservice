@@ -27,6 +27,14 @@ SECRET_KEY = '*1pdo+ybo69na()r=heapj+=@*i7f2p-x-p&-#^6#yj&jts@^q'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'APP_DIRS': True,
+    },
+]
+
 ALLOWED_HOSTS = ['*']
 
 # Application definition
@@ -77,9 +85,11 @@ CORS_ALLOW_CREDENTIALS = True
 
 # cannot specify port 80, other port can be specified i.e. localhost:4200
 CORS_ORIGIN_WHITELIST = (
-    'localhost',
+    'localhost:4200',
     '172.17.0.2',  # local docker ip on machine molly
-    '107.178.244.0'  # static GAE ip
+    '107.178.244.0',  # static GAE ip
+    'job-post-service-dot-perfect-entry-162216.appspot.com',
+    'location-service-dot-perfect-entry-162216.appspot.com',
 )
 
 ROOT_URLCONF = 'admin_site.urls'
@@ -207,18 +217,18 @@ STATIC_URL = '/static/'
 
 # JWT_PAYLOAD_GET_USER_ID_HANDLER = 'jwt_auth.utils.jwt_get_user_id_from_payload_handler'
 
-
 JWT_AUTH = {
-    # 'JWT_PAYLOAD_GET_USER_ID_HANDLER': 'jwt_get_user_id_from_payload',
     'JWT_AUTH_HEADER_PREFIX': 'Bearer',
     'JWT_ALLOW_REFRESH': True,
     # 'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=10),
     'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
 }
 
-# def jwt_get_user_id_from_payload(payload):
-#     """
-#     Override this function if user_id is formatted differently in payload
-#     """
-#
-#     return payload.get('userId')
+# JWT_AUTH = {
+#     # 'JWT_PAYLOAD_GET_USER_ID_HANDLER': 'jwt_get_user_id_from_payload',
+#     'JWT_AUTH_HEADER_PREFIX': 'Bearer',
+#     'JWT_ALLOW_REFRESH': True,
+#     # 'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=10),
+#     'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
+# }
+
